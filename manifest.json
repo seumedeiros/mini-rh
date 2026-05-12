@@ -1,0 +1,22 @@
+{
+  "name": "Mini Folha de Ponto",
+  "short_name": "MiniRH",
+  "description": "Aplicativo para anotar os horários de entrada e saída de funcionários para calcular o pagamento quinzenal ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#0000ff",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
