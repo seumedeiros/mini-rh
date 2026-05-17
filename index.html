@@ -1,2607 +1,420 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-<meta charset="utf-8">
-<title>Medeiros PDV Web v2.9.6</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>Mini RH</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-:root{
-  --bg:#0f1115;--card:#171a21;--muted:#a8b3cf;--txt:#e6eaf2;
-  --ok:#22c55e;--pri:#2563eb;--warn:#f59e0b;--err:#ef4444;--line:#262a36;
-}
-
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--txt);
-  font:14px/1.45 system-ui,Segoe UI,Arial;
-}
-
-h2,h3{margin:.4rem 0}
-button,input,select,textarea{font:inherit}
-
-.container{max-width:1200px;margin:0 auto;padding:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.grid{display:grid;gap:12px}
-.split-2{grid-template-columns:1.2fr .8fr}
-@media(max-width:900px){.split-2{grid-template-columns:1fr}}
-
-input[type="text"],input[type="number"],input[type="date"],input[type="password"],textarea,select{
-  width:100%;
-  background:#0e1015;
-  border:1px solid var(--line);
-  color:var(--txt);
-  border-radius:10px;
+body {
+  font-family: Arial;
+  background:#f0f2f5;
   padding:10px;
+  margin:0;
 }
 
-button{
-  border:none;
-  border-radius:10px;
-  padding:10px 14px;
-  cursor:pointer;
+.container {
+  max-width:600px;
+  margin:auto;
 }
 
-.btn{background:#263042;color:#dbe5ff;border:1px solid #334056}
-.btn.pri{background:var(--pri);color:#fff;border-color:#1f53c5}
-.btn.ok{background:var(--ok);color:#05240f}
-.btn.err{background:var(--err);color:#fff}
-.btn.warn{background:var(--warn);color:#231700}
-.btn.ghost{background:#1a1f2b;border:1px dashed #354057;color:#cfd8ff}
-
-.small{font-size:12px;color:var(--muted)}
-.right{text-align:right}
-.center{text-align:center}
-
-table{width:100%;border-collapse:collapse}
-th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left}
-th{
-  color:#c9d5ff;
-  background:rgba(255,255,255,.03);
-  position:sticky;
-  top:0;
-}
-
-.top{
-  display:flex;
-  gap:12px;
-  align-items:center;
-  justify-content:space-between;
-  padding:12px 16px;
-  background:#11141a;
-  border-bottom:1px solid var(--line);
-  position:sticky;
-  top:0;
-  z-index:10;
-}
-.brand{display:flex;gap:10px;align-items:center}
-.badge{
-  padding:2px 8px;
-  border-radius:999px;
-  background:#1a1f2b;
-  border:1px solid #30384a;
-  color:#cfe3ff;
-  font-size:12px;
-}
-.tabs{display:flex;gap:8px;flex-wrap:wrap}
-.tab{
-  border:1px solid var(--line);
-  background:var(--card);
-  color:var(--txt);
-  padding:8px 12px;
-  border-radius:10px;
-  cursor:pointer;
-}
-.tab.active{outline:2px solid var(--pri)}
-
-.hide{display:none!important}
-
-/* Sugestões de produto */
-#sugs{
-  position:absolute;
-  background:#1a1d25;
-  color:#fff;
-  width:90%;
-  z-index:20;
-  max-height:220px;
-  overflow:auto;
-  border-radius:8px;
-  border:1px solid #333;
-  box-shadow:0 2px 8px rgba(0,0,0,.5);
-  display:none;
-}
-#sugs div{padding:8px;cursor:pointer}
-#sugs div:hover{background:#202636}
-
-/* Login */
-#login-wrap{
-  min-height:100vh;
-  display:grid;
-  place-items:center;
-  padding:20px;
-}
-.login{width:min(400px,92vw)}
-
-/* QR PIX tela cheia */
-#qr-fullscreen{
-  position:fixed;
-  inset:0;
+.card {
   background:#fff;
-  color:#000;
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-  text-align:center;
-  padding:20px;
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:10px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
-#qr-actions{margin-top:14px;display:flex;gap:10px}
-#qr-actions button{
-  padding:10px 18px;
+
+h2 { text-align:center; }
+
+input, select {
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:8px;
+  border:1px solid #bbb;
+  background:#fff;
+}
+
+input:focus {
+  border:2px solid #007bff;
+  background:#eef7ff;
+}
+
+button {
+  width:100%;
+  padding:10px;
   border:none;
   border-radius:8px;
-  cursor:pointer;
-}
-#qr-copy{background:#16a34a;color:#fff}
-#qr-close{background:#222;color:#fff}
-
-/* Modal genérico */
-#modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.55);
-  display:none;
-  place-items:center;
-  padding:16px;
-  z-index:30;
-}
-#modal .card{width:min(560px,94vw)}
-
-/* Recibo */
-#recibo{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.55);
-  display:none;
-  place-items:center;
-  z-index:40;
-}
-#recibo .sheet{
-  background:#ffffff;
-  color:#000;
-  width:min(650px,95vw);
-  max-height:90vh;
-  overflow:auto;
-  border-radius:16px;
-  padding:24px;
-  box-shadow:0 0 20px rgba(0,0,0,.35);
-}
-#recibo h3{margin:0 0 6px;font-size:20px}
-#recibo table{width:100%;border-collapse:collapse}
-#recibo th,#recibo td{border-bottom:1px solid #ddd;padding:6px}
-#recibo .actions{
-  display:flex;
-  gap:8px;
-  justify-content:flex-end;
-  margin-top:12px;
-}
-
-/* ============================= */
-/*   TECLADO NUM / T9 MAIOR      */
-/* ============================= */
-#kbd-panel{
-  position:fixed;
-  bottom:25px;
-  right:25px;
-  background:#171a21;
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:12px;
-  box-shadow:0 8px 24px rgba(0,0,0,.55);
-  z-index:9999;
-  width:320px;
-  font-size:15px;
-}
-#kbd-panel.hide{display:none;}
-
-#kbd-display{
-  font-size:13px;
-  color:var(--muted);
-  margin-bottom:8px;
-  max-height:40px;
-  overflow:hidden;
-  white-space:nowrap;
-  text-overflow:ellipsis;
-}
-
-.kbd-row{display:flex;gap:6px;margin-bottom:6px}
-.kbd-btn{
-  flex:1;
-  padding:10px 6px;
-  border-radius:10px;
-  border:1px solid #334056;
-  background:#263042;
-  text-align:center;
-  color:#dbe5ff;
-  cursor:pointer;
-  user-select:none;
-}
-.kbd-btn.small{font-size:13px;padding:7px}
-.kbd-btn.wide{flex:1.4}
-.kbd-btn.mode{background:#1a1f2b;border-style:dashed}
-.kbd-btn.ok{background:#22c55e;color:#05240f}
-.kbd-btn.danger{background:#b91c1c;border-color:#7f1d1d}
-
-/* Botão flutuante para abrir/fechar teclado */
-#kbd-toggle-btn{
-  position:fixed;
-  bottom:25px;
-  right:25px;
-  z-index:9998;
-  background:#2563eb;
   color:#fff;
-  border:1px solid #1f53c5;
-  padding:14px 18px;
-  border-radius:14px;
-  font-size:16px;
-  box-shadow:0 8px 24px rgba(0,0,0,.5);
-  cursor:pointer;
+  font-weight:bold;
+  margin-top:5px;
 }
+
+.btn-save { background:#28a745; }
+.btn-delete { background:#dc3545; }
+.btn-view { background:#007bff; }
+.btn-pdf { background:#6f42c1; }
+.btn-lock { background:#343a40; }
+
+.box {
+  padding:8px;
+  margin:5px 0;
+  border-radius:6px;
+}
+
+.trabalho { background:#e6ffe6; border-left:4px solid green; }
+.falta { background:#ffe6e6; border-left:4px solid red; }
+.folga { background:#e6f0ff; border-left:4px solid blue; }
 
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
-/* ===== PATCH v3.2 - CORREÇÃO DE FUSO HORÁRIO ===== */
-
-// Retorna data/hora LOCAL em formato ISO (sem UTC)
-function nowLocalISO(){
-  const d = new Date();
-  const pad = n => String(n).padStart(2,"0");
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
-       + `T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
-
-// Retorna data/hora LOCAL formatada
-function nowLocalStr(){
-  return new Date().toLocaleString("pt-BR");
-}
-
-/* --- Substituições críticas --- */
-
-// Abertura de caixa
-if(typeof ensureCaixa === "function"){
-  const _ensureCaixa = ensureCaixa;
-  ensureCaixa = function(){
-    if(currentCaixaId && caixas.find(c=>c.id===currentCaixaId && !c.closedAt)) return;
-    const id=(caixas[caixas.length-1]?.id||0)+1;
-    caixas.push({id, openedAt: nowLocalISO(), closedAt: null});
-    currentCaixaId=id;
-    LS.save("caixas",caixas);
-    LS.save("currentCaixaId",id);
-  };
-}
-
-// Fechamento de caixa
-if(typeof fecharCaixaAtual === "function"){
-  const _fecharCaixaAtual = fecharCaixaAtual;
-  fecharCaixaAtual = function(silent=false){
-    if(currentUser.role!=="admin") return alert("Acesso negado.");
-    const cx=caixas.find(c=>c.id===currentCaixaId);
-    if(!cx || cx.closedAt) return alert("Nenhum caixa aberto.");
-    cx.closedAt = nowLocalISO();
-    LS.save("caixas",caixas);
-    currentCaixaId=null;
-    ensureCaixa();
-    renderTotaisDia();
-    updateBadges();
-    if(!silent) alert("Caixa fechado.");
-  };
-}
-
-// Correção no registro da venda
-if(typeof registrarVenda === "function"){
-  const _registrarVenda = registrarVenda;
-  registrarVenda = function(total,payment,paid,change,notes){
-    const id=(vendas[vendas.length-1]?.id||0)+1;
-    const items=cart.map(it=>({...it}));
-
-    const sale={
-      id,
-      datetime: nowLocalISO(),
-      user: currentUser.username,
-      caixaId: currentCaixaId,
-      subtotal: items.reduce((s,it)=>s+it.price*it.qty,0),
-      discount: desconto,
-      total,
-      payment,
-      paid,
-      change,
-      items,
-      notes
-    };
-
-    vendas.push(sale);
-    LS.save("vendas",vendas);
-
-    items.forEach(it=>{
-      const p=produtos.find(x=>x.id===it.id);
-      if(p) p.stock = round2((p.stock||0)-it.qty);
-    });
-    LS.save("produtos",produtos);
-
-    cart=[]; desconto=0; previewCredito=false;
-    renderCart();
-    renderTotaisDia();
-    ultimaVenda = sale;
-    showRecibo(sale);
-  };
-}
-
-// Corrige horário exibido no recibo
-if(typeof showRecibo === "function"){
-  const _showRecibo = showRecibo;
-  showRecibo = function(v){
-    ultimaVenda = v;
-    const s=document.getElementById("recibo-sheet");
-    const itens=v.items.map(it=>`
-      <tr>
-        <td>${it.code}</td>
-        <td>${it.name}</td>
-        <td class="right">${it.qty.toFixed(3)}</td>
-        <td class="right">${fmt(it.price)}</td>
-        <td class="right">${fmt(it.qty*it.price)}</td>
-      </tr>`).join("");
-
-    s.innerHTML=`
-      <h3>${cfg.store}</h3>
-      <div style="font-size:12px;margin-bottom:8px">
-        Data: ${nowLocalStr()} • Caixa ${v.caixaId} • Venda #${v.id}
-      </div>
-      <table>
-        <thead>
-          <tr><th>Cód</th><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th></tr>
-        </thead>
-        <tbody>${itens}</tbody>
-      </table>
-      <div class="right" style="margin-top:8px">
-        Subtotal: <b>${fmt(v.subtotal)}</b><br>
-        Desconto: <b>${fmt(v.discount)}</b><br>
-        Total: <b>${fmt(v.total)}</b><br>
-        Pago: <b>${fmt(v.paid)}</b> — Troco: <b>${fmt(v.change)}</b><br>
-        Forma: <b>${v.payment}</b>
-      </div>
-      <div class="actions">
-        <button class="btn ok" onclick="printRecibo()">🖨️ Imprimir Tela</button>
-        <button class="btn err" onclick="closeRecibo()">Fechar</button>
-      </div>
-    `;
-    document.getElementById("recibo").style.display="grid";
-  };
-}
-
-console.log("✅ PATCH v3.2 — FUSO HORÁRIO CORRIGIDO");
-
-
-/* ===== PATCH v3.3 - RELATÓRIO RESUMIDO POR CAIXA ===== */
-
-function renderResumoCaixas(){
-  const wrap = document.getElementById("rel-resumo-caixas");
-  if(!wrap) return;
-
-  wrap.innerHTML = "";
-
-  caixas.forEach(cx=>{
-    const vv = vendas.filter(v=>v.caixaId === cx.id);
-
-    if(!vv.length) return;
-
-    let totals = {DINHEIRO:0,"DÉBITO":0,"CRÉDITO":0,PIX:0,MISTA:0};
-    vv.forEach(v => totals[v.payment] += v.total);
-
-    const totalGeral = Object.values(totals).reduce((a,b)=>a+b,0);
-
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <h3>Caixa ${cx.id}</h3>
-      <div class="small">
-        Abertura: ${cx.openedAt}<br>
-        Fechamento: ${cx.closedAt || "(em aberto)"}
-      </div>
-
-      <table style="margin-top:8px">
-        <tr><td>Dinheiro</td><td class="right">${fmt(totals.DINHEIRO)}</td></tr>
-        <tr><td>Débito</td><td class="right">${fmt(totals["DÉBITO"])}</td></tr>
-        <tr><td>Crédito</td><td class="right">${fmt(totals["CRÉDITO"])}</td></tr>
-        <tr><td>PIX</td><td class="right">${fmt(totals.PIX)}</td></tr>
-        <tr><td>Misto</td><td class="right">${fmt(totals.MISTA)}</td></tr>
-        <tr><th>Total</th><th class="right">${fmt(totalGeral)}</th></tr>
-      </table>
-
-      <div class="row" style="margin-top:8px">
-        <button class="btn" onclick="toggleVendasCaixa('${cx.id}')">
-          Ver vendas (${vv.length})
-        </button>
-      </div>
-
-      <div id="vx-${cx.id}" style="display:none;margin-top:10px"></div>
-    `;
-    wrap.appendChild(card);
-
-    const vx = card.querySelector("#vx-"+cx.id);
-    vv.forEach(v=>{
-      vx.innerHTML += `
-        <div class="row small">
-          #${v.id} — ${v.datetime} — ${fmt(v.total)}
-          <button class="btn" onclick="showRecibo(vendas.find(x=>x.id===${v.id}))">🖨️</button>
-        </div>`;
-    });
-  });
-}
-
-function toggleVendasCaixa(id){
-  const el = document.getElementById("vx-"+id);
-  if(!el) return;
-  el.style.display = el.style.display === "none" ? "block" : "none";
-}
-
-// Injeta nova aba no relatório
-const _runRelOld = runRel;
-runRel = function(){
-  _runRelOld();
-  renderResumoCaixasFiltrado();
-};
-
-
-// ==== Resumo de Caixas FILTRADO por período ====
-function renderResumoCaixasFiltrado(){
-  const wrap = document.getElementById("rel-resumo-caixas");
-  if(!wrap) return;
-
-  const de  = document.getElementById("r-de")?.value || todayISO();
-  const ate = document.getElementById("r-ate")?.value || todayISO();
-
-  wrap.innerHTML = "";
-
-  const vendasPeriodo = vendas.filter(v =>
-    v.datetime >= de &&
-    v.datetime <= ate + "T23:59:59"
-  );
-
-  const caixasUsados = [...new Set(vendasPeriodo.map(v => v.caixaId))];
-
-  caixas
-    .filter(cx => caixasUsados.includes(cx.id))
-    .forEach(cx => {
-
-      const vv = vendasPeriodo.filter(v => v.caixaId === cx.id);
-      if(!vv.length) return;
-
-      const totals = {DINHEIRO:0,"DÉBITO":0,"CRÉDITO":0,PIX:0,MISTO:0};
-
-      vv.forEach(v=>{
-        if(totals[v.payment] !== undefined){
-          totals[v.payment] += v.total;
-        }
-      });
-
-      const totalGeral = Object.values(totals).reduce((a,b)=>a+b,0);
-
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <h3>Caixa ${cx.id}</h3>
-        <div class="small">
-          Abertura: ${cx.openedAt}<br>
-          Fechamento: ${cx.closedAt || "(em aberto)"}
-        </div>
-
-        <table style="margin-top:8px">
-          <tr><td>Dinheiro</td><td class="right">${fmt(totals.DINHEIRO)}</td></tr>
-          <tr><td>Débito</td><td class="right">${fmt(totals["DÉBITO"])}</td></tr>
-          <tr><td>Crédito</td><td class="right">${fmt(totals["CRÉDITO"])}</td></tr>
-          <tr><td>PIX</td><td class="right">${fmt(totals.PIX)}</td></tr>
-          <tr><td>Misto</td><td class="right">${fmt(totals.MISTO)}</td></tr>
-          <tr><th>Total</th><th class="right">${fmt(totalGeral)}</th></tr>
-        </table>
-
-        <button class="btn" onclick="toggleVendasCaixa('${cx.id}')">
-          Ver vendas (${vv.length})
-        </button>
-
-        <div id="vx-${cx.id}" style="display:none;margin-top:10px"></div>
-      `;
-
-      wrap.appendChild(card);
-
-      const vx = card.querySelector("#vx-"+cx.id);
-      vv.forEach(v=>{
-        vx.innerHTML += `
-          <div class="row small">
-            #${v.id} — ${v.datetime} — ${fmt(v.total)}
-            <button class="btn" onclick="showRecibo(vendas.find(x=>x.id===${v.id}))">🖨️</button>
-          </div>`;
-      });
-    });
-}
-
-</script>
-
-<link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#0000ff">
-
-<script>
-
-if('serviceWorker' in navigator){
-
-window.addEventListener('load',()=>{
-
-navigator.serviceWorker.register(
-'service-worker.js'
-);
-
-});
-
-}
-
-</script>
-
 </head>
 
 <body>
 
-<!-- BOTÃO PARA ABRIR / FECHAR O TECLADO -->
-<button id="kbd-toggle-btn">⌨️ Teclado</button>
-<!-- PAINEL DO TECLADO -->
-<div id="kbd-panel" class="hide"></div>
+<div class="container">
 
-<!-- LOGIN -->
-<div id="login-wrap">
-  <div class="card login">
-    <h3>🔐 Login</h3>
-    <label>Usuário</label><input id="lg-user" type="text" placeholder="pix">
-    <label>Senha</label><input id="lg-pass" type="password" placeholder="••••">
-    <div class="row" style="justify-content:space-between;margin-top:10px">
-      <span class="small">Padrão: <b>pix / 21967640994</b></span>
-      <button class="btn ok" onclick="login()">Entrar</button>
-    </div>
-  </div>
+<h2>Mini RH</h2>
+
+<div class="card">
+<h3>Cadastro</h3>
+<input id="nome" placeholder="Nome">
+<input type="date" id="inicio">
+<input id="folga" type="number" placeholder="Folga: 0=Seg ... 6=Dom">
+<input id="salario" type="number" placeholder="Salário mensal">
+<input id="carga" type="number" placeholder="Carga diária (horas)">
+<button class="btn-save" onclick="salvarFunc()">Salvar Funcionário</button>
 </div>
 
-<!-- APP -->
-<div id="app" class="hide">
-  <div class="top">
-    <div class="brand">
-      <span>🧾 Medeiros PDV Web v2.9.6</span>
-      <span id="badge-store" class="badge">Loja: -</span>
-      <span id="badge-user" class="badge">Usuário: -</span>
-      <span id="badge-role" class="badge">Perfil: -</span>
-      <span id="badge-caixa" class="badge">Caixa: -</span>
-    </div>
-    <div class="tabs">
-      <div class="tab active" data-tab="pdv">PDV (Caixa)</div>
-      <div class="tab" data-tab="relat">Relatórios</div>
-      <div class="tab" data-tab="admin">Configurações</div>
-      <button class="btn ghost" onclick="logout()">Sair</button>
-    </div>
-  </div>
+<div class="card">
+<h3>Funcionário</h3>
+<select id="lista"></select>
 
-  <div class="container">
-    <!-- PDV -->
-    <section id="tab-pdv" class="grid split-2">
-      <div class="card">
-        <h3>🛒 Carrinho</h3>
-        <div class="row" style="position:relative;align-items:flex-start">
-          <input id="busca" type="text" placeholder="Buscar por nome/código/barras">
-          <div id="sugs"></div>
-          <input id="qtd" type="number" min="0.001" step="0.001" value="1">
-          <button class="btn pri" onclick="addBySearch()">Adicionar</button>
-        </div>
+<button class="btn-delete" onclick="excluirFunc()">Excluir</button>
 
-        <div style="margin-top:10px;max-height:300px;overflow:auto;">
-          <table id="tbl-cart">
-            <thead><tr>
-              <th>Código</th><th>Nome</th><th>Un.</th>
-              <th class="right">Preço</th><th class="right">Qtd</th><th class="right">Total</th><th></th>
-            </tr></thead>
-            <tbody></tbody>
-            <tfoot>
-              <tr><td colspan="6" class="right">Subtotal: <span id="sub">R$ 0,00</span></td></tr>
-              <tr><td colspan="6" class="right">Desconto: <span id="desc">R$ 0,00</span></td></tr>
-              <tr><td colspan="6" class="right">Acréscimo (crédito): <span id="cred">R$ 0,00</span></td></tr>
-              <tr><td colspan="6" class="right">TOTAL: <span id="tot" style="font-weight:800">R$ 0,00</span></td></tr>
-            </tfoot>
-          </table>
-        </div>
+<input id="filtroPeriodo" type="number" value="0">
 
-        <div class="row">
-          <button class="btn" onclick="setDesconto()">Desconto (F2)</button>
-          <button class="btn err" onclick="limparCarrinho()">Cancelar</button>
-          <button class="btn ok" onclick="finalizar()">Finalizar (F12)</button>
-        </div>
-      </div>
+<button class="btn-view" onclick="mostrar()">Ver</button>
+<button class="btn-lock" onclick="travar()">Travar Quinzena</button>
+<button class="btn-pdf" onclick="gerarPDF()">Gerar PDF</button>
 
-      <div class="card">
-        <h3>📊 Totais do Caixa</h3>
-        <div class="row" id="caixa-actions">
-          <button class="btn ok" onclick="abrirNovoCaixa()">🟢 Abrir Novo Caixa</button>
-          <button class="btn warn" onclick="fecharCaixaAtual()">🔴 Fechar Caixa Atual</button>
-          <button class="btn ghost" onclick="baixarCSVVendas()">Exportar CSV do Caixa</button>
-        </div>
-        <div id="totais-dia" class="grid" style="grid-template-columns:repeat(4,1fr);margin-top:10px"></div>
-      </div>
-    </section>
-
-    <!-- RELATÓRIOS -->
-    <section id="tab-relat" class="card hide">
-      <h3>📑 Relatórios</h3>
-      <div class="row">
-        <div><label>De</label><input id="r-de" type="date"></div>
-        <div><label>Até</label><input id="r-ate" type="date"></div>
-        <button class="btn" onclick="runRel()">Buscar</button>
-        <button class="btn ghost" onclick="baixarCSVPeriodo()">Exportar CSV</button>
-      </div>
-
-      <div style="margin-top:10px;max-height:420px;overflow:auto;">
-        <table id="tbl-rel">
-          <thead><tr>
-            <th>ID</th><th>Data/Hora</th><th>Usuário</th><th>Caixa</th>
-            <th class="right">Subtotal</th><th class="right">Desconto</th><th class="right">Total</th>
-            <th>Pagamento</th><th class="right">Pago</th><th class="right">Troco</th><th>🖨️</th>
-          </tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <div class="right" style="margin-top:8px;font-weight:700">
-        Vendas: <span id="rel-n">0</span> |
-        Total: <span id="rel-t">R$ 0,00</span>
-      </div>
-    
-<hr>
-<h3>📦 Resumo por Caixa</h3>
-<div id="rel-resumo-caixas" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px"></div>
-
-</section>
-
-    <!-- CONFIGURAÇÕES -->
-    <section id="tab-admin" class="grid split-2 hide">
-      <div class="card">
-        <h3>🏪 Loja</h3>
-        <div class="grid">
-          <div><label>Nome da Loja</label><input id="cfg-store" type="text"></div>
-          <div class="row"><button class="btn ok" onclick="saveNomeLoja()">Salvar Nome</button></div>
-        </div>
-
-        <hr>
-        <h3>💳 PIX</h3>
-        <div class="grid">
-          <div><label>Chave PIX</label><input id="cfg-pix" type="text"></div>
-          <div><label>Nome recebedor</label><input id="cfg-pix-name" type="text"></div>
-          <div><label>Cidade</label><input id="cfg-pix-city" type="text"></div>
-          <div class="row"><button class="btn ok" onclick="saveCfgPix()">Salvar PIX</button></div>
-        </div>
-
-        <hr>
-        <h3>💾 Backup / Restauração</h3>
-        <button class="btn ghost" onclick="exportarBackup()">Exportar Backup</button>
-        <input type="file" id="restore-input" accept=".json" style="display:none">
-        <button class="btn ghost" onclick="document.getElementById('restore-input').click()">Restaurar Backup</button>
-      </div>
-
-      <div class="card">
-        <h3>📦 Produtos / Estoque</h3>
-        <div class="row">
-          <input id="p-busca" type="text" placeholder="Buscar produto">
-          <button class="btn" onclick="renderProdutos()">Buscar</button>
-          <button class="btn pri" onclick="openProdDialog()">Adicionar Produto</button>
-        </div>
-
-        <div style="max-height:420px;overflow:auto;margin-top:8px">
-          <table id="tbl-produtos">
-            <thead><tr>
-              <th>ID</th><th>Código</th><th>Nome</th><th>Categoria</th>
-              <th class="right">Preço</th><th>Un.</th><th class="right">Estoque</th><th>Barras</th><th></th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-
-        <hr style="margin:16px 0">
-        <h3>👥 Usuários</h3>
-        <div class="row"><button class="btn pri" onclick="openUserDialog()">Novo Usuário</button></div>
-
-        <div style="max-height:300px;overflow:auto;margin-top:8px">
-          <table id="tbl-users">
-            <thead><tr><th>ID</th><th>Usuário</th><th>Função</th><th>Ativo</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  </div>
+<button onclick="exportar()">Exportar JSON</button>
+<input type="file" onchange="importar(event)">
 </div>
 
-<!-- PIX FULLSCREEN -->
-<div id="qr-fullscreen">
-  <h2>Escaneie para pagar via PIX</h2>
-  <p id="qr-valor"></p>
-  <div id="qrcode"></div>
-  <div id="qr-actions">
-    <button id="qr-copy">Copiar código</button>
-    <button id="qr-close">Fechar</button>
-  </div>
+<div class="card">
+<h3>Registro do Dia</h3>
+
+<label>📅 Data</label>
+<input type="date" id="data">
+
+<label>🟢 Entrada</label>
+<input type="time" id="entrada">
+
+<label>🔴 Saída</label>
+<input type="time" id="saida">
+
+<label>☕ Intervalo saída</label>
+<input type="time" id="is">
+
+<label>☕ Intervalo volta</label>
+<input type="time" id="iv">
+
+<button class="btn-save" onclick="registrar()">Salvar / Atualizar</button>
+
 </div>
 
-<!-- MODAL -->
-<div id="modal"><div class="card"></div></div>
-
-<!-- RECIBO -->
-<div id="recibo"><div class="sheet" id="recibo-sheet"></div></div>
-
+<div id="hist"></div>
+<div id="total" class="card"></div>
 <script>
-/* ==== Utils ==== */
-const CURRENCY="R$";
-const fmt=n=>CURRENCY+" "+Number(n||0).toFixed(2).replace(".",",");
-const round2=x=>Math.round((x+Number.EPSILON)*100)/100;
-const todayISO=()=>new Date().toISOString().slice(0,10);
-const nowLocal=()=>new Date().toLocaleString();
-const nowStamp=()=>new Date().toISOString().replace(/[:.]/g,"-");
-const LS={
-  load(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},
-  save(k,v){localStorage.setItem(k,JSON.stringify(v))}
-};
 
-/* ===== BEEP SONORO PDV (VERSÃO CORRETA E ESTÁVEL) ===== */
-let pdvAudioCtx = null;
+function min(t){
+ if(!t) return 0;
+ var p=t.split(':');
+ return p[0]*60 + parseInt(p[1]);
+}
 
-function initAudioCtx(){
-  if(!pdvAudioCtx){
-    pdvAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function salvarFunc(){
+ let l=JSON.parse(localStorage.getItem('f')||'[]');
+
+ if(!nome.value || !salario.value || !carga.value){
+  return alert("Preencha nome, salário e carga!");
+ }
+
+ l.push({
+  nome:nome.value,
+  inicio:inicio.value,
+  folga:parseInt(folga.value),
+  salario:parseFloat(salario.value),
+  carga:parseFloat(carga.value)
+ });
+
+ localStorage.setItem('f',JSON.stringify(l));
+ carregar();
+}
+
+function excluirFunc(){
+ if(!confirm("Tem certeza que deseja excluir?")) return;
+ let l=JSON.parse(localStorage.getItem('f')||'[]');
+ l.splice(lista.value,1);
+ localStorage.setItem('f',JSON.stringify(l));
+ carregar();
+}
+
+function carregar(){
+ let l=JSON.parse(localStorage.getItem('f')||'[]');
+ lista.innerHTML='';
+ l.forEach((f,i)=>{
+  lista.innerHTML+=`<option value="${i}">${f.nome}</option>`;
+ });
+}
+
+function registrar(){
+
+ if(!data.value) return alert("Informe a data");
+
+ let f=JSON.parse(localStorage.getItem('f'))[lista.value];
+
+ let e=min(entrada.value);
+ let s=min(saida.value);
+ let i1=min(is.value);
+ let i2=min(iv.value);
+
+ let total=s-e;
+ if(i1 && i2) total -= (i2-i1);
+
+ let h=total/60;
+ let d=h-f.carga;
+
+ let reg=JSON.parse(localStorage.getItem('reg')||'[]');
+
+ reg = reg.filter(r=>!(r.func==lista.value && r.data==data.value));
+
+ reg.push({
+  func:lista.value,
+  data:data.value,
+  entrada:entrada.value,
+  saida:saida.value,
+  is:is.value,
+  iv:iv.value,
+  horas:h,
+  diff:d
+ });
+
+ localStorage.setItem('reg',JSON.stringify(reg));
+ alert("Salvo!");
+}
+function mostrar(){
+
+ let f=JSON.parse(localStorage.getItem('f'))[lista.value];
+ let reg=JSON.parse(localStorage.getItem('reg')||'[]');
+
+ let inicio=new Date(f.inicio);
+ inicio.setDate(inicio.getDate()+filtroPeriodo.value*15);
+
+ let fim=new Date(inicio);
+ fim.setDate(fim.getDate()+14);
+
+ let html="";
+ let faltas=0;
+ let saldoHoras=0;
+
+ for(let d=new Date(inicio); d<=fim; d.setDate(d.getDate()+1)){
+
+  let dataStr=d.toISOString().split('T')[0];
+  let diaSemana=d.getDay();
+
+  let r=reg.find(x=>x.func==lista.value && x.data==dataStr);
+
+  if(diaSemana==f.folga){
+    html+=`<div class="box folga">${dataStr} - FOLGA</div>`;
   }
-  if(pdvAudioCtx.state === "suspended"){
-    pdvAudioCtx.resume();
+  else if(r){
+
+    html+=`
+    <div class="box trabalho">
+      ${dataStr}<br>
+      ⏰ ${r.entrada||"--"} → ${r.saida||"--"}<br>
+      ☕ ${r.is||"--"} - ${r.iv||"--"}<br>
+      ⌛ ${r.horas.toFixed(2)}h
+    </div>`;
+
+    saldoHoras += (r.diff || 0);
   }
-}
-
-function beepAdd(){
-  if(!pdvAudioCtx) return;
-
-  const osc  = pdvAudioCtx.createOscillator();
-  const gain = pdvAudioCtx.createGain();
-
-  osc.type = "square";
-  osc.frequency.value = 880;
-  gain.gain.value = 0.15;
-
-  osc.connect(gain);
-  gain.connect(pdvAudioCtx.destination);
-
-  osc.start();
-  osc.stop(pdvAudioCtx.currentTime + 0.08);
-}
-
-/* desbloqueia áudio no primeiro gesto do operador */
-["click","keydown","touchstart"].forEach(ev=>{
-  window.addEventListener(ev, initAudioCtx, { once:true });
-});
-
-
-// Gera ID único para cada caixa usando data e hora (formato: CX-YYYY-MM-DD-HH-mm-ss)
-function gerarIdCaixa(){
-  const d = new Date();
-  const pad = n => String(n).padStart(2,"0");
-  return "CX-" + d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()) + "-" + pad(d.getHours()) + "-" + pad(d.getMinutes()) + "-" + pad(d.getSeconds());
-}
-
-
-/* ==== Reset diário de CAIXA ==== */
-function resetCaixaIfNewDay(){
-  const last=LS.load("lastCaixaDay",null);
-  const today=todayISO();
-  if(last !== today){
-    LS.save("lastCaixaDay",today);
-    // NÃO resetar histórico de caixas automaticamente para manter auditoria.
-    // Se quiser limpar os caixas todo dia descomente as linhas abaixo:
-    // LS.save("caixas",[]);
-    // LS.save("currentCaixaId",null);
+  else{
+    html+=`<div class="box falta">${dataStr} - FALTA</div>`;
+    faltas++;
   }
-}
-resetCaixaIfNewDay();
+ }
 
-/* ==== Dados ==== */
-let cfg=LS.load("cfg",{store:"SUA PADARIA",pix_key:"",pix_name:"SUA PADARIA",pix_city:"SUA CIDADE"});
+ hist.innerHTML=html;
 
-let users=LS.load("users",[
-  {id:1,username:"pix",pass:"21967640994",role:"admin",active:true}
-]);
+ let salario = f.salario || 0;
+ let carga = f.carga || 1;
 
-let produtos=LS.load("produtos",[]);
-let vendas=LS.load("vendas",[]);
-let caixas=LS.load("caixas",[]);
-let currentCaixaId=LS.load("currentCaixaId",null);
+ let salarioQuinzena = salario / 2;
+ let valorDia = salario / 30;
+ let valorHora = valorDia / carga;
 
-let currentUser=null;
-let cart=[], desconto=0, previewCredito=false;
-let ultimaVenda=null;
+ let descontoFaltas = faltas * valorDia;
+ let ajusteHoras = saldoHoras * valorHora;
 
-/* ==== CONTROLE DE SUGESTÕES (TECLADO PDV) ==== */
-let sugIndex = -1;        // item destacado
-let sugList = [];        // lista atual
-let sugSelected = false; // se já foi selecionado com Enter
+ let totalFinal = salarioQuinzena - descontoFaltas + ajusteHoras;
 
-/* ==== Login ==== */
-function login(){
-  const u=document.getElementById("lg-user").value.trim();
-  const p=document.getElementById("lg-pass").value.trim();
-  const row=users.find(x=>x.username===u && x.pass===p && x.active!==false);
-  if(!row){alert("Usuário ou senha inválidos.");return;}
-  currentUser=row;
-  document.getElementById("login-wrap").classList.add("hide");
-  document.getElementById("app").classList.remove("hide");
-  ensureCaixa();
-  initUI();
+ total.innerHTML=`
+ Salário da quinzena: R$ ${salarioQuinzena.toFixed(2)}<br>
+ Faltas: ${faltas}<br>
+ Desconto faltas: R$ ${descontoFaltas.toFixed(2)}<br>
+ ${ajusteHoras>=0 ? "Extra horas: R$ "+ajusteHoras.toFixed(2) : "Desconto horas: R$ "+Math.abs(ajusteHoras).toFixed(2)}<br><br>
+ <b>Total: R$ ${totalFinal.toFixed(2)}</b>
+ `;
 }
 
-/* ==== Caixa ==== */
-function ensureCaixa(){
-  // Se já há um caixa corrente aberto e válido, não criar outro
-  if(currentCaixaId){
-    const exists = caixas.find(c => c.id === currentCaixaId && !c.closedAt);
-    if(exists) return;
+function gerarPDF(){
+
+ const { jsPDF } = window.jspdf;
+ let doc = new jsPDF();
+
+ let f=JSON.parse(localStorage.getItem('f'))[lista.value];
+ let reg=JSON.parse(localStorage.getItem('reg')||'[]');
+
+ let inicio=new Date(f.inicio);
+ inicio.setDate(inicio.getDate()+filtroPeriodo.value*15);
+
+ let fim=new Date(inicio);
+ fim.setDate(fim.getDate()+14);
+
+ let col1X = 10;
+ let col2X = 110;
+ let y1 = 20;
+ let y2 = 20;
+
+ let usarColuna2 = false;
+
+ doc.setFontSize(14);
+ doc.text("RELATÓRIO QUINZENAL",10,10);
+
+ for(let d=new Date(inicio); d<=fim; d.setDate(d.getDate()+1)){
+
+  let dataStr=d.toISOString().split('T')[0];
+  let diaSemana=d.getDay();
+  let r=reg.find(x=>x.func==lista.value && x.data==dataStr);
+
+  let linhas=[];
+
+  if(diaSemana==f.folga){
+    linhas.push(`${dataStr} - FOLGA`);
   }
-  // Criar um novo caixa com ID único baseado em data/hora
-  const id = gerarIdCaixa();
-  caixas.push({ id: id, openedAt: new Date().toISOString(), closedAt: null, total: 0 });
-  currentCaixaId = id;
-  LS.save("caixas", caixas);
-  LS.save("currentCaixaId", id);
-}
-
-
-function abrirNovoCaixa(){
-  if(!currentUser || currentUser.role !== "admin"){ alert("Acesso negado."); return; }
-
-  // Se existe caixa aberto, pergunta para fechar
-  if(currentCaixaId){
-    const cx = caixas.find(c => c.id === currentCaixaId && !c.closedAt);
-    if(cx){
-      if(!confirm("Fechar caixa atual e abrir outro?")) return;
-      fecharCaixaAtual(true);
-    }
+  else if(r){
+    linhas.push(`Data: ${dataStr}`);
+    linhas.push(`Entrada: ${r.entrada||"--"}  Saída: ${r.saida||"--"}`);
+    linhas.push(`Intervalo: ${r.is||"--"} - ${r.iv||"--"}`);
+    linhas.push(`Horas: ${r.horas.toFixed(2)}h`);
+  }
+  else{
+    linhas.push(`${dataStr} - FALTA`);
   }
 
-  const id = gerarIdCaixa();
-  caixas.push({ id: id, openedAt: new Date().toISOString(), closedAt: null, total: 0 });
-  currentCaixaId = id;
-  LS.save("caixas", caixas);
-  LS.save("currentCaixaId", id);
-  renderTotaisDia();
-  updateBadges();
-}
+  let x = usarColuna2 ? col2X : col1X;
+  let y = usarColuna2 ? y2 : y1;
 
-function fecharCaixaAtual(silent=false){
-  if(!currentUser || currentUser.role !== "admin") return alert("Acesso negado.");
-  const cx = caixas.find(c => c.id === currentCaixaId);
-  if(!cx || cx.closedAt) return alert("Nenhum caixa aberto.");
-  cx.closedAt = new Date().toISOString();
-
-  // calcular total do caixa com base nas vendas relacionadas
-  const total = vendas.filter(v => v.caixaId === cx.id).reduce((s,v)=>s + (v.total||0), 0);
-  cx.total = total;
-
-  LS.save("caixas", caixas);
-  currentCaixaId = null;
-  ensureCaixa();
-  renderTotaisDia();
-  updateBadges();
-  if(!silent) alert("Caixa fechado.");
-}
-
-/* ==== UI ==== */
-function initUI(){
-  updateBadges();
-
-  document.querySelectorAll(".tab").forEach(t=>{
-    t.onclick=()=>{
-      const id=t.dataset.tab;
-      if((id==="relat"||id==="admin") && currentUser.role!=="admin"){
-        return alert("Acesso negado.");
-      }
-      document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-      document.querySelectorAll("[id^='tab-']").forEach(sec=>sec.classList.add("hide"));
-      t.classList.add("active");
-      document.getElementById("tab-"+id).classList.remove("hide");
-
-      if(id==="relat"){
-        document.getElementById("r-de").value=todayISO();
-        document.getElementById("r-ate").value=todayISO();
-        runRel();
-      }
-      if(id==="admin"){
-        fillAdmin();
-      }
-    };
+  linhas.forEach(l=>{
+    doc.text(l, x, y);
+    y += 5;
   });
 
-  document.getElementById("busca").addEventListener("input",showSugs);
+  y += 3; // espaço entre dias
 
-  window.addEventListener("keydown",e=>{
-  const tag = document.activeElement?.tagName;
-  if(e.key==="Enter" && tag !== "INPUT" && tag !== "TEXTAREA"){
-    e.preventDefault();
-  }
-  if(e.key==="F2"){ e.preventDefault(); setDesconto(); }
-  if(e.key==="F12"){ e.preventDefault(); finalizar(); }
-});
-
-  renderCart();
-  renderTotaisDia();
-}
-
-function updateBadges(){
-  document.getElementById("badge-store").textContent="Loja: "+cfg.store;
-  document.getElementById("badge-user").textContent="Usuário: "+currentUser.username;
-  document.getElementById("badge-role").textContent="Perfil: "+currentUser.role;
-  document.getElementById("badge-caixa").textContent="Caixa: #"+currentCaixaId;
-}
-
-/* ==== Sugestões ==== */
-function showSugs(){
-  const q = document.getElementById("busca").value.trim().toLowerCase();
-  const sugs = document.getElementById("sugs");
-
-  sugIndex = -1;
-  sugSelected = false;
-
-  if(!q){
-    sugs.style.display = "none";
-    return;
-  }
-
-  sugList = produtos.filter(p =>
-    p.name?.toLowerCase().includes(q) ||
-    p.code?.toLowerCase().includes(q) ||
-    p.barcode?.toLowerCase().includes(q)
-  ).slice(0,8);
-
-  if(!sugList.length){
-    sugs.style.display = "none";
-    return;
-  }
-
-  sugs.innerHTML = sugList.map((p,i)=>`
-    <div data-i="${i}" onclick="clickSug(${i})">
-      ${p.name} — ${fmt(p.price)}
-    </div>
-  `).join("");
-
-  sugs.style.display = "block";
-}
-
-function clickSug(i){
-  const busca = document.getElementById("busca");
-  const qtd   = document.getElementById("qtd");
-
-  busca.value = sugList[i].code;
-  document.getElementById("sugs").style.display = "none";
-  sugSelected = true;
-
-  qtd.focus();
-  qtd.select();
-}
-
-function selectSug(code){
-  document.getElementById("busca").value=code;
-  document.getElementById("sugs").style.display="none";
-}
-
-/* ==== Carrinho ==== */
-function addBySearch(){
-
-  const sugsEl = document.getElementById("sugs");
-  if(!sugSelected && sugsEl && sugsEl.style.display !== "none"){
-    return;
-  }
-  sugSelected = false;
-
-  const buscaInput = document.getElementById("busca");
-  const qtdInput   = document.getElementById("qtd");
-
-  const code = buscaInput.value.trim();
-  const qty  = parseFloat(qtdInput.value) || 1;
-
-  const p = produtos.find(x =>
-    x.code === code || x.barcode === code
-  );
-
-  if(!p){
-    buscaInput.focus();
-    buscaInput.select();
-    alert("Produto não encontrado.");
-    return;
-  }
-
-  const ex = cart.find(i => i.id === p.id);
-  if(ex) ex.qty += qty;
-  else cart.push({
-    id:p.id,
-    code:p.code,
-    name:p.name,
-    unit:p.unit,
-    price:p.price,
-    qty
-  });
-
-  buscaInput.value = "";
-  qtdInput.value   = "1";
-  document.getElementById("sugs").style.display = "none";
-
-  renderCart();
-  beepAdd();
-
-/* ===== DESBLOQUEIO DE ÁUDIO NO PRIMEIRO INPUT ===== */
-["click","keydown","touchstart"].forEach(ev=>{
-  window.addEventListener(ev, initAudioCtx, { once:true });
-});
-
-  /* 🔥 AQUI É O COMPORTAMENTO QUE VOCÊ QUER */
-  buscaInput.focus();
-  buscaInput.select();
-}
-
-function rm(i){ cart.splice(i,1); renderCart(); }
-
-function renderCart(){
-  const tb=document.querySelector("#tbl-cart tbody");
-  tb.innerHTML="";
-  let subtotal=0;
-
-  cart.forEach((it,i)=>{
-    const t=it.qty*it.price;
-    subtotal+=t;
-    tb.innerHTML+=`
-      <tr>
-        <td>${it.code}</td>
-        <td>${it.name}</td>
-        <td>${it.unit}</td>
-        <td class="right">${fmt(it.price)}</td>
-        <td class="right">${it.qty.toFixed(3)}</td>
-        <td class="right">${fmt(t)}</td>
-        <td><button class="btn err" onclick="rm(${i})">X</button></td>
-      </tr>`;
-  });
-
-  const base=subtotal-desconto;
-  const acr=previewCredito?round2(base*0.05):0;
-  const total=subtotal-desconto+acr;
-
-  document.getElementById("sub").textContent=fmt(subtotal);
-  document.getElementById("desc").textContent=fmt(desconto);
-  document.getElementById("cred").textContent=fmt(acr);
-  document.getElementById("tot").textContent=fmt(total);
-}
-
-function setDesconto(){
-  const v=prompt("Valor do desconto:","0,00");
-  if(v===null) return;
-  const d=parseFloat(v.replace(",","."))||0;
-  desconto=d;
-  renderCart();
-}
-
-function limparCarrinho(){
-  if(!cart.length) return;
-  if(confirm("Cancelar venda?")){
-    cart=[]; desconto=0; previewCredito=false; renderCart();
-  }
-}
-
-/* ==== Pagamento ==== */
-function finalizar(){
-  if(!cart.length) return alert("Carrinho vazio.");
-
-  const subtotal=cart.reduce((s,it)=>s+it.price*it.qty,0);
-  const base=subtotal-desconto;
-
-  payDialog(base,(ret)=>{
-    const payment=ret.payment;
-    const paid=ret.paid;
-    const notes=ret.notes;
-
-    previewCredito = payment==="CRÉDITO";
-
-    let total=base;
-    if(payment==="CRÉDITO") total=round2(base*1.05);
-
-    if(payment==="PIX"){
-      openPixQr(total,()=> registrarVenda(total,payment,total,0,notes));
-      return;
-    }
-
-    const troco=Math.max(0,round2(paid-total));
-    registrarVenda(total,payment,paid,troco,notes);
-  });
-}
-
-function payDialog(base,cb){
-  openModal(`
-    <h3>Pagamento</h3>
-    <div class="grid">
-      <div>Total: <b>${fmt(base)}</b></div>
-
-      <div>
-        <label>Forma</label>
-        <select id="pay-method" onchange="updatePayValue(${base})">
-          <option>DINHEIRO</option>
-          <option>DÉBITO</option>
-          <option>CRÉDITO</option>
-          <option>PIX</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Valor pago</label>
-        <input id="pay-paid" value="${base.toFixed(2)}">
-        <div id="extra-info" class="small"></div>
-      </div>
-
-      <div>
-        <label>Observações</label>
-        <textarea id="pay-notes" rows="3"></textarea>
-      </div>
-
-      <div class="row" style="justify-content:flex-end">
-        <button class="btn" onclick="closeModal()">Voltar</button>
-        <button class="btn ok" onclick="confirmPay()">Confirmar</button>
-      </div>
-    </div>
-  `);
-
-  window.confirmPay=function(){
-    const method=document.getElementById("pay-method").value;
-    const paid=parseFloat(document.getElementById("pay-paid").value)||0;
-    const notes=document.getElementById("pay-notes").value;
-    closeModal();
-    cb({payment:method,paid,notes});
-  };
-}
-
-function updatePayValue(base){
-  const m=document.getElementById("pay-method").value;
-  const inp=document.getElementById("pay-paid");
-  const extra=document.getElementById("extra-info");
-  if(m==="CRÉDITO"){
-    const novo=round2(base*1.05);
-    inp.value=novo.toFixed(2);
-    extra.textContent="Acréscimo de 5% aplicado.";
-  }else{
-    inp.value=base.toFixed(2);
-    extra.textContent="";
-  }
-}
-
-/* ==== PIX ==== */
-function openPixQr(valor,cb){
-  if(!cfg.pix_key){
-    alert("Configure a chave PIX em Configurações.");
-    return;
-  }
-
-  const payload=buildPixPayload({
-    key:cfg.pix_key,
-    name:cfg.pix_name,
-    city:cfg.pix_city,
-    amount:valor,
-    txid:"MDR"+Date.now()
-  });
-
-  document.getElementById("qr-valor").textContent=`Valor: ${fmt(valor)}`;
-  document.getElementById("qr-fullscreen").style.display="flex";
-  const div=document.getElementById("qrcode");
-  div.innerHTML="";
-  new QRCode(div,{text:payload,width:300,height:300});
-
-  document.getElementById("qr-close").onclick=()=>{
-    document.getElementById("qr-fullscreen").style.display="none";
-    cb();
-  };
-
-  document.getElementById("qr-copy").onclick=()=>{
-    const ta=document.createElement("textarea");
-    ta.value=payload;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
-    alert("Código PIX copiado.");
-  };
-}
-
-function emvKV(tag,val){
-  const L=String(val).length.toString().padStart(2,'0');
-  return `${tag}${L}${val}`;
-}
-
-function crc16ccitt(str){
-  let crc=0xFFFF;
-  for(let i=0;i<str.length;i++){
-    crc^=(str.charCodeAt(i)<<8);
-    for(let j=0;j<8;j++){
-      crc=(crc&0x8000)?((crc<<1)^0x1021)&0xFFFF:(crc<<1)&0xFFFF;
-    }
-  }
-  return crc.toString(16).toUpperCase().padStart(4,'0');
-}
-
-function buildPixPayload({key,name,city,amount,txid}){
-  name=(name||"SUA PADARIA").slice(0,25);
-  city=(city||"SUA CIDADE").slice(0,15);
-  txid=(txid||"MDRPDV").slice(0,25);
-
-  let gui=emvKV("00","br.gov.bcb.pix")+emvKV("01",key);
-  let m=emvKV("26",gui);
-
-  let p="";
-  p+=emvKV("00","01")+emvKV("01","12");
-  p+=m;
-  p+=emvKV("52","0000");
-  p+=emvKV("53","986");
-  p+=emvKV("54",Number(amount).toFixed(2));
-  p+=emvKV("58","BR");
-  p+=emvKV("59",name);
-  p+=emvKV("60",city);
-  p+=emvKV("62",emvKV("05",txid));
-  p+="6304";
-  return p+crc16ccitt(p);
-}
-
-/* ======================================================
-   ESC/POS – USB + Bluetooth + QRCode PIX
-   ====================================================== */
-const escposEncoder = new TextEncoder();
-let escposMode = null;
-let escposSerialWriter = null;
-let escposBleCharacteristic = null;
-
-async function conectarImpressoraUSB(){
-  if(!("serial" in navigator)){
-    alert("Seu navegador não suporta Web Serial.\nUse Chrome/Edge mais recente.");
-    return;
-  }
-  try{
-    const port = await navigator.serial.requestPort();
-    await port.open({baudRate:9600});
-    escposSerialWriter = port.writable.getWriter();
-    escposMode = "serial";
-    alert("🖨️ Impressora ESC/POS USB conectada!");
-  }catch(e){
-    alert("Erro ao conectar impressora USB: "+e);
-  }
-}
-
-async function conectarImpressoraBT(){
-  if(!navigator.bluetooth){
-    alert("Seu navegador não suporta Web Bluetooth.\nSugestão: Android + Chrome.");
-    return;
-  }
-  try{
-    const device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices:true,
-      optionalServices:["0000ffe0-0000-1000-8000-00805f9b34fb"]
-    });
-    const server = await device.gatt.connect();
-    const service = await server.getPrimaryService("0000ffe0-0000-1000-8000-00805f9b34fb");
-    const char = await service.getCharacteristic("0000ffe1-0000-1000-8000-00805f9b34fb");
-    escposBleCharacteristic = char;
-    escposMode = "bluetooth";
-    alert("📶 Impressora Bluetooth 58mm conectada!");
-  }catch(e){
-    alert("Erro ao conectar impressora Bluetooth: "+e);
-  }
-}
-
-async function escposSend(bytes){
-  if(!escposMode){
-    alert("Conecte a impressora (USB ou Bluetooth) primeiro.");
-    return;
-  }
-  if(!(bytes instanceof Uint8Array)) bytes = Uint8Array.from(bytes);
-  try{
-    if(escposMode==="serial" && escposSerialWriter){
-      await escposSerialWriter.write(bytes);
-    }else if(escposMode==="bluetooth" && escposBleCharacteristic){
-      await escposBleCharacteristic.writeValue(bytes);
-    }else{
-      alert("Impressora não está pronta.");
-    }
-  }catch(e){
-    alert("Erro ao enviar para impressora: "+e);
-  }
-}
-function escposTextLine(text){
-  return escposEncoder.encode((text||"")+"\n");
-}
-
-async function escposPrintQR(payload){
-  const data = escposEncoder.encode(payload);
-  const storeLen = data.length + 3;
-  const pL = storeLen & 0xFF;
-  const pH = storeLen >> 8;
-
-  await escposSend([0x1D,0x28,0x6B,0x04,0x00,0x31,0x41,0x32,0x00]);
-  await escposSend([0x1D,0x28,0x6B,0x03,0x00,0x31,0x43,0x04]);
-  await escposSend([0x1D,0x28,0x6B,0x03,0x00,0x31,0x45,0x30]);
-
-  const header = Uint8Array.from([0x1D,0x28,0x6B,pL,pH,0x31,0x50,0x30]);
-  const pack = new Uint8Array(header.length+data.length);
-  pack.set(header,0);
-  pack.set(data,header.length);
-  await escposSend(pack);
-
-  await escposSend([0x1D,0x28,0x6B,0x03,0x00,0x31,0x51,0x30]);
-}
-
-async function escposPrintVenda(v){
-  if(!v){ alert("Nenhuma venda selecionada."); return; }
-  if(!escposMode){ alert("Conecte a impressora antes."); return; }
-
-  const ESC = 0x1B, GS = 0x1D;
-
-  await escposSend([ESC,0x40]);
-  await escposSend([ESC,0x61,0x01]);
-  await escposSend(escposTextLine(cfg.store || "SUA PADARIA"));
-  await escposSend(escposTextLine("------------------------------"));
-
-  await escposSend([ESC,0x61,0x00]);
-  await escposSend(escposTextLine("Data: "+(v.datetime || nowLocal())));
-  await escposSend(escposTextLine("Caixa: #"+v.caixaId+"   Venda: #"+v.id));
-  await escposSend(escposTextLine("Operador: "+(v.user||"")));
-  await escposSend(escposTextLine("------------------------------"));
-
-  v.items.forEach(it=>{
-    const nome = (it.name||"").substring(0,28);
-    const qt  = it.qty.toFixed(3);
-    const total = (it.price*it.qty).toFixed(2);
-    escposSend(escposTextLine(nome));
-    escposSend(escposTextLine(` Qtd:${qt}  Vl:${it.price.toFixed(2)}  T:${total}`));
-  });
-
-  await escposSend(escposTextLine("------------------------------"));
-  await escposSend(escposTextLine(`Subtotal: R$ ${v.subtotal.toFixed(2)}`));
-  await escposSend(escposTextLine(`Desconto: R$ ${v.discount.toFixed(2)}`));
-  await escposSend(escposTextLine(`Total:    R$ ${v.total.toFixed(2)}`));
-  await escposSend(escposTextLine(`Pago:     R$ ${v.paid.toFixed(2)}`));
-  await escposSend(escposTextLine(`Troco:    R$ ${v.change.toFixed(2)}`));
-  await escposSend(escposTextLine(`Forma: ${v.payment}`));
-  await escposSend(escposTextLine("------------------------------"));
-
-  if(v.payment==="PIX" && cfg.pix_key){
-    const payload = buildPixPayload({
-      key:cfg.pix_key,
-      name:cfg.pix_name,
-      city:cfg.pix_city,
-      amount:v.total,
-      txid:"MDR"+v.id
-    });
-    await escposSend([ESC,0x61,0x01]);
-    await escposSend(escposTextLine("Pague com PIX:"));
-    await escposPrintQR(payload);
-    await escposSend([ESC,0x61,0x00]);
-  }
-
-  await escposSend(escposTextLine(""));
-  await escposSend(escposTextLine("Obrigado pela preferência!"));
-  await escposSend([ESC,0x64,0x03]);
-  await escposSend([GS,0x56,0x01]);
-}
-
-function printReciboEscPos(){
-  if(!ultimaVenda){
-    alert("Nenhuma venda carregada.");
-    return;
-  }
-  escposPrintVenda(ultimaVenda);
-}
-
-/* ==== Registrar venda ==== */
-function registrarVenda(total,payment,paid,change,notes){
-  const id=(vendas[vendas.length-1]?.id||0)+1;
-  const items=cart.map(it=>({...it}));
-
-  const sale={
-    id,
-    datetime: nowLocalISO(),
-    user: currentUser.username,
-    caixaId: currentCaixaId,
-    subtotal: items.reduce((s,it)=>s+it.price*it.qty,0),
-    discount: desconto,
-    total,
-    payment,
-    paid,
-    change,
-    items,
-    notes,
-    status: "ATIVA",
-    canceledAt: null,
-    canceledBy: null
-  };
-
-  vendas.push(sale);
-  LS.save("vendas",vendas);
-
-  items.forEach(it=>{
-    const p=produtos.find(x=>x.id===it.id);
-    if(p) p.stock = round2((p.stock||0)-it.qty);
-  });
-
-  LS.save("produtos",produtos);
-
-  cart=[]; desconto=0; previewCredito=false;
-  renderCart();
-  renderTotaisDia();
-  ultimaVenda = sale;
-  showRecibo(sale);
-}
-
-/* ==== Cancelar venda ==== */
-function cancelarVenda(id){
-  if(!currentUser || currentUser.role !== "admin"){
-    alert("Apenas administrador pode cancelar venda.");
-    return;
-  }
-
-  const v = vendas.find(x=>x.id===id);
-  if(!v){
-    alert("Venda não encontrada.");
-    return;
-  }
-
-  if(v.status === "CANCELADA"){
-    alert("Venda já está cancelada.");
-    return;
-  }
-
-  if(!confirm("Deseja realmente cancelar esta venda?")){
-    return;
-  }
-
-  // 🔁 Restaurar estoque
-  v.items.forEach(it=>{
-    const p = produtos.find(x=>x.id===it.id);
-    if(p){
-      p.stock = round2((p.stock||0) + it.qty);
-    }
-  });
-
-  // 🔒 Marcar como cancelada
-  v.status = "CANCELADA";
-  v.canceledAt = nowLocalISO();
-  v.canceledBy = currentUser.username;
-
-  LS.save("vendas",vendas);
-  LS.save("produtos",produtos);
-
-  renderTotaisDia();
-  runRel();
-
-  alert("Venda cancelada com sucesso.");
-}
-
-/* ==== Recibo visual ==== */
-function showRecibo(v){
-  ultimaVenda = v;
-  const s=document.getElementById("recibo-sheet");
-  const itens=v.items.map(it=>`
-    <tr>
-      <td>${it.code}</td>
-      <td>${it.name}</td>
-      <td class="right">${it.qty.toFixed(3)}</td>
-      <td class="right">${fmt(it.price)}</td>
-      <td class="right">${fmt(it.qty*it.price)}</td>
-    </tr>`).join("");
-
-  s.innerHTML=`
-    <h3>${cfg.store}</h3>
-    <div style="font-size:12px;margin-bottom:8px">
-      Data: ${nowLocal()} • Caixa #${v.caixaId} • Venda #${v.id}
-    </div>
-    <table>
-      <thead><tr>
-        <th>Cód</th><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th>
-      </tr></thead>
-      <tbody>${itens}</tbody>
-    </table>
-    <div class="right" style="margin-top:8px">
-      Subtotal: <b>${fmt(v.subtotal)}</b><br>
-      Desconto: <b>${fmt(v.discount)}</b><br>
-      Total: <b>${fmt(v.total)}</b><br>
-      Pago: <b>${fmt(v.paid)}</b> — Troco: <b>${fmt(v.change)}</b><br>
-      Forma: <b>${v.payment}</b>
-    </div>
-
-    <div class="actions">
-      <button class="btn" onclick="conectarImpressoraUSB()">🔌 USB ESC/POS</button>
-      <button class="btn" onclick="conectarImpressoraBT()">📶 BT 58mm</button>
-      <button class="btn pri" onclick="printReciboEscPos()">🧾 Imprimir ESC/POS</button>
-      <button class="btn ok" onclick="printRecibo()">🖨️ Imprimir Tela</button>
-      <button class="btn" onclick="saveReciboTXT(${v.id})">💾 Salvar TXT</button>
-      <button class="btn err" onclick="closeRecibo()">Fechar</button>
-    </div>
-  `;
-
-  document.getElementById("recibo").style.display="grid";
-}
-
-function printRecibo(){
-  const w=window.open("","_blank");
-  w.document.write(document.getElementById("recibo-sheet").innerHTML);
-  w.document.close(); w.focus(); w.print(); w.close();
-}
-
-function saveReciboTXT(id){
-  const v=vendas.find(x=>x.id===id);
-  let out=`${cfg.store}\nVenda #${id}\nCaixa #${v.caixaId}\nData: ${nowLocal()}\n\n`;
-
-  v.items.forEach(it=>{
-    out+=`${it.code} — ${it.name} — ${it.qty} x ${it.price.toFixed(2)} = ${(it.qty*it.price).toFixed(2)}\n`;
-  });
-
-  out+=`\nSubtotal: ${v.subtotal}\nDesconto: ${v.discount}\nTotal: ${v.total}\nPago: ${v.paid}  Troco: ${v.change}\nForma: ${v.payment}\n`;
-
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([out],{type:"text/plain"}));
-  a.download=`recibo_${nowStamp()}.txt`;
-  a.click();
-}
-
-function closeRecibo(){ document.getElementById("recibo").style.display="none"; }
-
-/* ==== Totais do caixa ==== */
-function vendasDoCaixa(id){
-  return vendas.filter(v=>v.caixaId===id && v.status!=="CANCELADA");
-}
-
-function renderTotaisDia(){
-  const vv=vendasDoCaixa(currentCaixaId);
-
-  let val={DINHEIRO:0, "DÉBITO":0,"CRÉDITO":0,PIX:0};
-  vv.forEach(v=> val[v.payment]+=v.total );
-  const total=vv.reduce((s,v)=>s+v.total,0);
-
-  const wrap=document.getElementById("totais-dia");
-  wrap.innerHTML=`
-    <div class="card"><div class="small">Dinheiro</div><b>${fmt(val.DINHEIRO)}</b></div>
-    <div class="card"><div class="small">Débito</div><b>${fmt(val["DÉBITO"])}</b></div>
-    <div class="card"><div class="small">Crédito</div><b>${fmt(val["CRÉDITO"])}</b></div>
-    <div class="card"><div class="small">PIX</div><b>${fmt(val.PIX)}</b></div>
-    <div class="card"><div class="small">Total</div><b>${fmt(total)}</b></div>
-    <div class="card"><div class="small">Vendas</div><b>${vv.length}</b></div>
-  `;
-}
-
-/* ==== CSV Caixa ==== */
-function baixarCSVVendas(){
-  if(currentUser.role!=="admin") return alert("Acesso negado.");
-  const vv=vendasDoCaixa(currentCaixaId);
-  const heads=["id","datetime","user","caixaId","subtotal","discount","total","payment","paid","change"];
-  const rows=vv.map(v=>[v.id,v.datetime,v.user,v.caixaId,v.subtotal,v.discount,v.total,v.payment,v.paid,v.change]);
-
-  const csv=[heads,...rows].map(r=>r.join(";")).join("\n");
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
-  a.download=`vendas_caixa_${currentCaixaId}.csv`;
-  a.click();
-}
-
-/* ==== Relatórios ==== */
-function runRel(){
-  if(currentUser.role!=="admin") return;
-
-  const de=document.getElementById("r-de").value||todayISO();
-  const ate=document.getElementById("r-ate").value||todayISO();
-
-  const tb=document.querySelector("#tbl-rel tbody");
-  tb.innerHTML="";
-
-  const vv=vendas.filter(v=>
-   v.datetime>=de &&
-   v.datetime<= ate+"T23:59:59"
-).sort((a,b)=>b.id-a.id);
-
-  let total=0;
-
-vv.forEach(v=>{
-  if(v.status !== "CANCELADA"){
-    total+=v.total;
-  }
-
-    const cancelTag = v.status==="CANCELADA"
-      ? `<span style="color:#ef4444;font-weight:700">CANCELADA</span>`
-      : "";
-
-    tb.innerHTML+=`
-      <tr style="${v.status==="CANCELADA" ? "opacity:0.5" : ""}">
-        <td>${v.id}</td>
-        <td>${v.datetime}</td>
-        <td>${v.user}</td>
-        <td>#${v.caixaId}</td>
-        <td class="right">${fmt(v.subtotal)}</td>
-        <td class="right">${fmt(v.discount)}</td>
-        <td class="right">${fmt(v.total)}</td>
-        <td>${v.payment}</td>
-        <td class="right">${fmt(v.paid)}</td>
-        <td class="right">${fmt(v.change)}</td>
-        <td>
-          ${cancelTag}
-          <button class="btn" onclick="showRecibo(vendas.find(x=>x.id==${v.id}))">🖨️</button>
-          ${currentUser.role==="admin" && v.status!=="CANCELADA"
-            ? `<button class="btn err" onclick="cancelarVenda(${v.id})">🛑</button>`
-            : ""}
-        </td>
-      </tr>
-    `;
-  });
-
-  document.getElementById("rel-n").textContent=vv.length;
-  document.getElementById("rel-t").textContent=fmt(total);
-}
-
-/* ==== CSV período ==== */
-function baixarCSVPeriodo(){
-  if(currentUser.role!=="admin") return;
-  const de=document.getElementById("r-de").value||todayISO();
-  const ate=document.getElementById("r-ate").value||todayISO();
-
-  const vv=vendas.filter(v=>v.datetime>=de && v.datetime<= ate+"T23:59:59");
-  const heads=["id","datetime","user","caixaId","subtotal","discount","total","payment","paid","change"];
-  const rows=vv.map(v=>[v.id,v.datetime,v.user,v.caixaId,v.subtotal,v.discount,v.total,v.payment,v.paid,v.change]);
-
-  const csv=[heads,...rows].map(r=>r.join(";")).join("\n");
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
-  a.download=`vendas_${de}_a_${ate}.csv`;
-  a.click();
-}
-
-/* ==== Admin: Config ==== */
-function fillAdmin(){
-  document.getElementById("cfg-store").value=cfg.store;
-  document.getElementById("cfg-pix").value=cfg.pix_key;
-  document.getElementById("cfg-pix-name").value=cfg.pix_name;
-  document.getElementById("cfg-pix-city").value=cfg.pix_city;
-
-  renderProdutos();
-
-  const tb=document.querySelector("#tbl-users tbody");
-  tb.innerHTML="";
-
-  users.forEach(u=>{
-    tb.innerHTML+=`
-      <tr>
-        <td>${u.id}</td>
-        <td>${u.username}</td>
-        <td>${u.role}</td>
-        <td>${u.active?"Sim":"Não"}</td>
-        <td>
-          <button class="btn" onclick="openUserDialog(${u.id})">Editar</button>
-          ${u.id===1?"":`<button class="btn err" onclick="delUser(${u.id})">Excluir</button>`}
-        </td>
-      </tr>`;
-  });
-}
-
-function saveNomeLoja(){
-  cfg.store=document.getElementById("cfg-store").value.trim();
-  LS.save("cfg",cfg);
-  updateBadges();
-  alert("Nome salvo.");
-}
-
-function saveCfgPix(){
-  cfg.pix_key=document.getElementById("cfg-pix").value.trim();
-  cfg.pix_name=document.getElementById("cfg-pix-name").value.trim().slice(0,25);
-  cfg.pix_city=document.getElementById("cfg-pix-city").value.trim().slice(0,15);
-  LS.save("cfg",cfg);
-  alert("PIX salvo.");
-}
-
-/* ==== Produtos ==== */
-function renderProdutos(){
-  const q=(document.getElementById("p-busca").value||"").toLowerCase();
-  const tb=document.querySelector("#tbl-produtos tbody");
-  tb.innerHTML="";
-
-  produtos
-    .filter(p=>
-      !q ||
-      p.name?.toLowerCase().includes(q) ||
-      p.code?.toLowerCase().includes(q) ||
-      p.barcode?.toLowerCase().includes(q)
-    )
-    .forEach(p=>{
-      tb.innerHTML+=`
-        <tr>
-          <td>${p.id}</td>
-          <td>${p.code}</td>
-          <td>${p.name}</td>
-          <td>${p.category}</td>
-          <td class="right">${fmt(p.price)}</td>
-          <td>${p.unit}</td>
-          <td class="right">${p.stock}</td>
-          <td>${p.barcode}</td>
-          <td>
-            <button class="btn" onclick="openProdDialog(${p.id})">Editar</button>
-            <button class="btn err" onclick="delProd(${p.id})">Excluir</button>
-          </td>
-        </tr>`;
-    });
-}
-
-function openProdDialog(id){
-  const p=produtos.find(x=>x.id===id)||{code:"",name:"",category:"",price:0,unit:"UN",stock:0,barcode:""};
-
-  openModal(`
-    <h3>${id?"Editar":"Adicionar"} Produto</h3>
-    <div class="grid">
-      <input id="pd-code" placeholder="Código" value="${p.code}">
-      <input id="pd-name" placeholder="Nome" value="${p.name}">
-      <input id="pd-cat" placeholder="Categoria" value="${p.category}">
-      <input id="pd-price" placeholder="Preço" value="${p.price}">
-      <input id="pd-unit" placeholder="UN" value="${p.unit}">
-      <input id="pd-stock" placeholder="Estoque" value="${p.stock}">
-      <input id="pd-bar" placeholder="Código de barras" value="${p.barcode}">
-      <div class="row" style="justify-content:flex-end">
-        <button class="btn" onclick="closeModal()">Cancelar</button>
-        <button class="btn ok" onclick="saveProd(${id||0})">Salvar</button>
-      </div>
-    </div>
-  `);
-}
-
-function saveProd(id){
-  const code=document.getElementById("pd-code").value.trim();
-  const name=document.getElementById("pd-name").value.trim();
-  const category=document.getElementById("pd-cat").value.trim();
-  const price=parseFloat(document.getElementById("pd-price").value)||0;
-  const unit=document.getElementById("pd-unit").value.trim();
-  const stock=parseFloat(document.getElementById("pd-stock").value)||0;
-  const barcode=document.getElementById("pd-bar").value.trim();
-
-  if(!name) return alert("Nome obrigatório.");
-
-  if(id){
-    const p=produtos.find(x=>x.id===id);
-    Object.assign(p,{code,name,category,price,unit,stock,barcode});
-  }else{
-    const nid=(produtos[produtos.length-1]?.id||0)+1;
-    produtos.push({id:nid,code,name,category,price,unit,stock,barcode});
-  }
-
-  LS.save("produtos",produtos);
-  closeModal();
-  renderProdutos();
-}
-
-function delProd(id){
-  if(!confirm("Excluir produto?")) return;
-  produtos=produtos.filter(p=>p.id!==id);
-  LS.save("produtos",produtos);
-  renderProdutos();
-}
-
-/* ==== Usuários ==== */
-function openUserDialog(id){
-  const u=users.find(x=>x.id===id)||{username:"",pass:"",role:"staff",active:true};
-
-  openModal(`
-    <h3>Usuário</h3>
-    <div class="grid">
-      <input id="us-user" placeholder="Usuário" value="${u.username}">
-      <select id="us-role">
-        <option ${u.role==="admin"?"selected":""}>admin</option>
-        <option ${u.role==="staff"?"selected":""}>staff</option>
-      </select>
-      <select id="us-act">
-        <option value="true" ${u.active?"selected":""}>Ativo</option>
-        <option value="false" ${!u.active?"selected":""}>Inativo</option>
-      </select>
-      <input id="us-pass" placeholder="Senha (opcional)">
-      <div class="row" style="justify-content:flex-end">
-        <button class="btn" onclick="closeModal()">Cancelar</button>
-        <button class="btn ok" onclick="saveUser(${id||0})">Salvar</button>
-      </div>
-    </div>
-  `);
-}
-
-function saveUser(id){
-  const username=document.getElementById("us-user").value.trim();
-  const role=document.getElementById("us-role").value;
-  const active=document.getElementById("us-act").value==="true";
-  const pass=document.getElementById("us-pass").value.trim();
-
-  if(id){
-    const u=users.find(x=>x.id===id);
-    u.username=username;
-    u.role=role;
-    u.active=active;
-    if(pass) u.pass=pass;
-  }else{
-    const nid=(users[users.length-1]?.id||0)+1;
-    users.push({id:nid,username,pass:pass||"1234",role,active});
-  }
-
-  LS.save("users",users);
-  closeModal();
-  fillAdmin();
-}
-
-function delUser(id){
-  if(id===1) return alert("Não é possível excluir o admin principal.");
-  if(!confirm("Excluir usuário?")) return;
-  users=users.filter(u=>u.id!==id);
-  LS.save("users",users);
-  fillAdmin();
-}
-
-/* ==== Backup ==== */
-function exportarBackup(){
-  const all={cfg,users,produtos,vendas,caixas};
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([JSON.stringify(all,null,2)],{type:"application/json"}));
-  a.download=`backup_pdv_${nowStamp()}.json`;
-  a.click();
-}
-
-document.getElementById("restore-input").onchange=e=>{
-  const file=e.target.files[0];
-  if(!file) return;
-  const r=new FileReader();
-  r.onload=()=>{
-    try{
-      const data=JSON.parse(r.result);
-      cfg=data.cfg;
-      users=data.users;
-      produtos=data.produtos;
-      vendas=data.vendas;
-      caixas=data.caixas;
-      LS.save("cfg",cfg);
-      LS.save("users",users);
-      LS.save("produtos",produtos);
-      LS.save("vendas",vendas);
-      LS.save("caixas",caixas);
-      alert("Backup restaurado!");
-      location.reload();
-    }catch(e){
-      alert("Arquivo inválido.");
-    }
-  };
-  r.readAsText(file);
-};
-
-/* ==== Modal ==== */
-function openModal(html){
-  document.getElementById("modal").style.display="grid";
-  document.querySelector("#modal .card").innerHTML=html;
-}
-function closeModal(){ document.getElementById("modal").style.display="none"; }
-
-/* ==== Logout ==== */
-function logout(){ location.reload(); }
-
-/* =======================================================
-   TECLADO NUM / T9 – COM TAB, ESPAÇO E BOTÃO DE ATIVAR
-   ======================================================= */
-const T9_MAP = {
-  "2":"ABC","3":"DEF","4":"GHI","5":"JKL",
-  "6":"MNO","7":"PQRS","8":"TUV","9":"WXYZ"
-};
-let kbdMode = "NUM";
-let kbdEl   = null;
-let t9State = { lastKey:null, index:0, timeout:null };
-
-function escapeHtml(str){
-  return (str||"").replace(/[&<>"']/g, m=>(
-    {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]
-  ));
-}
-function getBuscaInput(){ return document.getElementById("busca"); }
-
-function buildKeyboard(){
-  kbdEl = document.getElementById("kbd-panel");
-  if(!kbdEl) return;
-  renderKeyboard();
-}
-
-function renderKeyboard(){
-  if(!kbdEl) return;
-  const busca = getBuscaInput();
-  const txt   = busca ? busca.value : "";
-  let html = `<div id="kbd-display">Busca: <span>${escapeHtml(txt)}</span></div>`;
-
-  const NUM_LAYOUT = [
-    [
-      {label:"7", type:"digit", value:"7"},
-      {label:"8", type:"digit", value:"8"},
-      {label:"9", type:"digit", value:"9"},
-      {label:"⌫", type:"back",  value:"",  extra:"danger"}
-    ],
-    [
-      {label:"4", type:"digit", value:"4"},
-      {label:"5", type:"digit", value:"5"},
-      {label:"6", type:"digit", value:"6"},
-      {label:"+", type:"op",    value:"+",}
-    ],
-    [
-      {label:"1", type:"digit", value:"1"},
-      {label:"2", type:"digit", value:"2"},
-      {label:"3", type:"digit", value:"3"},
-      {label:"-", type:"op",    value:"-"}
-    ],
-    [
-      {label:"ABC", type:"mode", value:"T9", extra:"mode small"},
-      {label:"0",   type:"digit",value:"0"},
-      {label:".",   type:"digit",value:"."},
-      {label:"Tab", type:"tab",  value:"",  extra:"small"}
-    ],
-    [
-      {label:"Esp", type:"space",value:" ", extra:"small wide"},
-      {label:"=",   type:"eval", value:"=", extra:"ok"},
-      {label:"OK",  type:"ok",   value:"",  extra:"ok"},
-      {label:"X",   type:"close",value:"",  extra:"danger"}
-    ]
-  ];
-
-  const T9_LAYOUT = [
-    [
-      {label:"1",      type:"digit",value:"1"},
-      {label:"2 ABC",  type:"t9",   value:"2", extra:"small"},
-      {label:"3 DEF",  type:"t9",   value:"3", extra:"small"},
-      {label:"⌫",      type:"back", value:"",  extra:"danger"}
-    ],
-    [
-      {label:"4 GHI",  type:"t9",   value:"4", extra:"small"},
-      {label:"5 JKL",  type:"t9",   value:"5", extra:"small"},
-      {label:"6 MNO",  type:"t9",   value:"6", extra:"small"},
-      {label:"NUM",    type:"mode", value:"NUM", extra:"mode small"}
-    ],
-    [
-      {label:"7 PQRS", type:"t9",   value:"7", extra:"small"},
-      {label:"8 TUV",  type:"t9",   value:"8", extra:"small"},
-      {label:"9 WXYZ", type:"t9",   value:"9", extra:"small"},
-      {label:"Esp",    type:"space",value:" ", extra:"small"}
-    ],
-    [
-      {label:"-",      type:"char", value:"-"},
-      {label:"0",      type:"digit",value:"0"},
-      {label:"Tab",    type:"tab",  value:"",  extra:"small"},
-      {label:"OK",     type:"ok",   value:"",  extra:"ok"}
-    ],
-    [
-      {label:"X", type:"close", value:"", extra:"danger wide"}
-    ]
-  ];
-
-  const layout = (kbdMode === "NUM" ? NUM_LAYOUT : T9_LAYOUT);
-
-  layout.forEach(row=>{
-    html += '<div class="kbd-row">';
-    row.forEach(btn=>{
-      const extra = btn.extra ? " "+btn.extra : "";
-      html += `<button class="kbd-btn${extra}" data-type="${btn.type}" data-val="${btn.value||""}">${btn.label}</button>`;
-    });
-    html += "</div>";
-  });
-
-  kbdEl.innerHTML = html;
-  kbdEl.querySelectorAll(".kbd-btn").forEach(b=>{
-    b.addEventListener("click", onKbdBtnClick);
-  });
-}
-
-function resetT9State(){
-  if(t9State.timeout) clearTimeout(t9State.timeout);
-  t9State = { lastKey:null, index:0, timeout:null };
-}
-
-function insertChar(ch){
-  const inp = getBuscaInput(); if(!inp) return;
-  inp.value = (inp.value || "") + ch;
-}
-
-function backspace(){
-  const inp = getBuscaInput(); if(!inp) return;
-  inp.value = (inp.value || "").slice(0,-1);
-}
-
-function evaluateExpression(){
-  const inp = getBuscaInput(); if(!inp) return;
-  const exprRaw = (inp.value || "").replace(/,/g,".");
-  if(!exprRaw.trim()) return;
-  if(!/^[0-9+\-*/().\s]+$/.test(exprRaw)) return;
-  try{
-    const res = Function('"use strict";return('+exprRaw+')')();
-    if(typeof res === "number" && isFinite(res)){
-      inp.value = String(round2(res));
-    }
-  }catch(e){}
-}
-
-function handleT9Key(digit){
-  const letters = T9_MAP[digit];
-  const inp = getBuscaInput(); if(!inp) return;
-  let val = inp.value || "";
-
-  if(!letters){
-    insertChar(digit);
-    resetT9State();
-    return;
-  }
-  if(t9State.lastKey === digit){
-    if(val.length > 0){
-      val = val.slice(0,-1);
-    }
-    t9State.index = (t9State.index + 1) % letters.length;
-  }else{
-    t9State.lastKey = digit;
-    t9State.index = 0;
-  }
-  const ch = letters[t9State.index];
-  inp.value = val + ch;
-  if(t9State.timeout) clearTimeout(t9State.timeout);
-  t9State.timeout = setTimeout(()=>{ t9State.lastKey=null; }, 800);
-}
-
-function syncKbdDisplay(){
-  if(!kbdEl) return;
-  const disp = kbdEl.querySelector("#kbd-display span");
-  const inp  = getBuscaInput();
-  if(disp && inp){
-    disp.textContent = inp.value || "";
-  }
-}
-
-function focusNextElement(){
-  const focusables = Array.from(document.querySelectorAll(
-    'input, button, select, textarea, [tabindex]:not([tabindex="-1"])'
-  )).filter(el=>!el.disabled && el.offsetParent !== null);
-  if(!focusables.length) return;
-  const current = document.activeElement;
-  const idx = focusables.indexOf(current);
-  const next = focusables[(idx+1) % focusables.length];
-  next.focus();
-}
-
-function onKbdBtnClick(e){
-  const btn  = e.currentTarget;
-  const type = btn.dataset.type;
-  const val  = btn.dataset.val;
-
-  if(type === "digit" || type === "op" || type === "char"){
-    insertChar(val);
-    resetT9State();
-  }else if(type === "back"){
-    backspace();
-    resetT9State();
-  }else if(type === "eval"){
-    evaluateExpression();
-    resetT9State();
-  }else if(type === "mode"){
-    kbdMode = (val || (kbdMode === "NUM" ? "T9" : "NUM"));
-    resetT9State();
-    renderKeyboard();
-  }else if(type === "t9"){
-    handleT9Key(val);
-  }else if(type === "space"){
-    insertChar(" ");
-    resetT9State();
-  }else if(type === "tab"){
-    focusNextElement();
-    resetT9State();
-  }else if(type === "ok"){
-    hideKeyboard();
-    const inp = getBuscaInput();
-    if(inp) inp.blur();
-  }else if(type === "close"){
-    hideKeyboard();
-  }
-
-  syncKbdDisplay();
-
-  const inp = getBuscaInput();
-  if(inp){
-    inp.focus();
-    if(typeof showSugs === "function") showSugs();
-  }
-}
-
-function showKeyboard(){
-  if(!kbdEl) buildKeyboard();
-  if(!kbdEl) return;
-  kbdEl.classList.remove("hide");
-  syncKbdDisplay();
-}
-
-function hideKeyboard(){
-  if(!kbdEl) return;
-  kbdEl.classList.add("hide");
-  resetT9State();
-}
-
-/* ==== Setup teclado + botão toggle ==== */
-document.addEventListener("DOMContentLoaded", ()=>{
-  kbdEl = document.getElementById("kbd-panel");
-  if(kbdEl) buildKeyboard();
-
-  const busca = getBuscaInput();
-  if(busca){
-    busca.addEventListener("input", ()=>{
-      syncKbdDisplay();
-      if(typeof showSugs === "function") showSugs();
-    });
-  }
-
-  const toggleBtn = document.getElementById("kbd-toggle-btn");
-  if(toggleBtn){
-    toggleBtn.addEventListener("click", ()=>{
-      if(kbdEl && kbdEl.classList.contains("hide")) showKeyboard();
-      else hideKeyboard();
-    });
-  }
-});
-
-// Retorna caixas cujo id contém a data ISO (YYYY-MM-DD)
-function caixasDoDia(dataISO){
-  return caixas.filter(cx => cx.id && cx.id.includes(dataISO));
-}
-
-// Retorna soma dos totais dos caixas de uma data (se caixa.total estiver ausente, soma vendas)
-function totalDia(dataISO){
-  const lista = caixasDoDia(dataISO);
-  return lista.reduce((s,cx)=>{
-    if(typeof cx.total === 'number') return s + cx.total;
-    const t = vendas.filter(v=>v.caixaId===cx.id).reduce((ss,v)=>ss + (v.total||0), 0);
-    return s + t;
-  },0);
-}
-/* ===== ENTER NO CAMPO QUANTIDADE ===== */
-document.getElementById("qtd").addEventListener("keydown", e=>{
-  if(e.key === "Enter"){
-    e.preventDefault();
-    addBySearch();
-  }
-});
-
-/* === PATCH v3.1 - Pagamento MISTO SIMPLES === */
-function payDialog(base, cb){
-  const html = `
-    <h3>Pagamento</h3>
-    <div class="grid">
-      <div>Total (sem acréscimo): <b>${fmt(base)}</b></div>
-      <div>
-        <label>Forma</label>
-        <select id="pay-method" onchange="onPayMethodChange(${base})">
-          <option>DINHEIRO</option>
-          <option>DÉBITO</option>
-          <option>CRÉDITO</option>
-          <option>PIX</option>
-          <option>MISTA</option>
-        </select>
-      </div>
-      <div id="single-pay">
-        <label>Valor pago</label>
-        <input id="pay-paid" value="${base.toFixed(2)}">
-        <div id="extra-info" class="small"></div>
-      </div>
-      <div id="mista-pay" style="display:none">
-        <div class="row">
-          <div style="flex:1">
-            <label>Forma A</label>
-            <select id="mix-method-a">
-              <option>DINHEIRO</option><option>DÉBITO</option><option>CRÉDITO</option><option>PIX</option>
-            </select>
-            <input id="mix-val-a" placeholder="Valor A" value="">
-          </div>
-          <div style="flex:1">
-            <label>Forma B</label>
-            <select id="mix-method-b">
-              <option>DINHEIRO</option><option>DÉBITO</option><option>CRÉDITO</option><option>PIX</option>
-            </select>
-            <input id="mix-val-b" placeholder="Valor B" value="">
-          </div>
-        </div>
-        <div class="small">A soma de A + B deve ser igual ao total.</div>
-      </div>
-      <div>
-        <label>Observações</label>
-        <textarea id="pay-notes" rows="2"></textarea>
-      </div>
-      <div class="row" style="justify-content:flex-end">
-        <button class="btn" onclick="closeModal()">Voltar</button>
-        <button class="btn ok" id="btn-confirm-pay">Confirmar (F12)</button>
-      </div>
-    </div>
-  `;
-  openModal(html);
-
-  document.getElementById("btn-confirm-pay").onclick = function(){
-    const method = document.getElementById("pay-method").value;
-    if(method !== "MISTA"){
-      const paid = parseFloat((document.getElementById("pay-paid").value||"0").toString().replace(',','.'))||0;
-      const notes = document.getElementById("pay-notes").value||"";
-      closeModal();
-      cb({payment:method, paid, notes});
-    } else {
-      const aMethod = document.getElementById("mix-method-a").value;
-      const bMethod = document.getElementById("mix-method-b").value;
-      const aVal = parseFloat((document.getElementById("mix-val-a").value||"0").toString().replace(',','.'))||0;
-      const bVal = parseFloat((document.getElementById("mix-val-b").value||"0").toString().replace(',','.'))||0;
-      const notes = document.getElementById("pay-notes").value||"";
-      const sum = round2(aVal + bVal);
-      if(Math.abs(sum - round2(base)) > 0.009){
-        return alert("A soma dos valores deve ser igual ao total da venda.");
-      }
-      closeModal();
-      cb({payment:"MISTA", paid:sum, notes, mixed:[{method:aMethod,value:aVal},{method:bMethod,value:bVal}]});
-    }
-  };
-
-  window.addEventListener("keydown", function f12handler(e){
-    if(e.key === "F12"){
-      e.preventDefault();
-      const btn = document.getElementById("btn-confirm-pay");
-      if(btn) btn.click();
-    }
-  }, {once:true});
-}
-
-function onPayMethodChange(base){
-  const m = document.getElementById("pay-method").value;
-  const single = document.getElementById("single-pay");
-  const mista = document.getElementById("mista-pay");
-  const extra = document.getElementById("extra-info");
-  if(m === "CRÉDITO"){
-    const novo = round2(base*1.05);
-    document.getElementById("pay-paid").value = novo.toFixed(2);
-    extra.textContent = "Acréscimo de 5% aplicado.";
-    single.style.display = "block";
-    mista.style.display = "none";
-  } else if(m === "MISTA"){
-    single.style.display = "none";
-    mista.style.display = "block";
-    extra.textContent = "";
-    document.getElementById("pay-paid").value = base.toFixed(2);
+  if(usarColuna2){
+    y2 = y;
   } else {
-    single.style.display = "block";
-    mista.style.display = "none";
-    extra.textContent = "";
-    document.getElementById("pay-paid").value = base.toFixed(2);
-  }
-}
-
-
-/* ===== PATCH v3.2 - CORREÇÃO DE FUSO HORÁRIO ===== */
-
-// Retorna data/hora LOCAL em formato ISO (sem UTC)
-function nowLocalISO(){
-  const d = new Date();
-  const pad = n => String(n).padStart(2,"0");
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
-       + `T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
-
-// Retorna data/hora LOCAL formatada
-function nowLocalStr(){
-  return new Date().toLocaleString("pt-BR");
-}
-
-/* --- Substituições críticas --- */
-
-// Abertura de caixa
-if(typeof ensureCaixa === "function"){
-  const _ensureCaixa = ensureCaixa;
-  ensureCaixa = function(){
-    if(currentCaixaId && caixas.find(c=>c.id===currentCaixaId && !c.closedAt)) return;
-    const id=(caixas[caixas.length-1]?.id||0)+1;
-    caixas.push({id, openedAt: nowLocalISO(), closedAt: null});
-    currentCaixaId=id;
-    LS.save("caixas",caixas);
-    LS.save("currentCaixaId",id);
-  };
-}
-
-// Fechamento de caixa
-if(typeof fecharCaixaAtual === "function"){
-  const _fecharCaixaAtual = fecharCaixaAtual;
-  fecharCaixaAtual = function(silent=false){
-    if(currentUser.role!=="admin") return alert("Acesso negado.");
-    const cx=caixas.find(c=>c.id===currentCaixaId);
-    if(!cx || cx.closedAt) return alert("Nenhum caixa aberto.");
-    cx.closedAt = nowLocalISO();
-    LS.save("caixas",caixas);
-    currentCaixaId=null;
-    ensureCaixa();
-    renderTotaisDia();
-    updateBadges();
-    if(!silent) alert("Caixa fechado.");
-  };
-}
-
-// Correção no registro da venda
-if(typeof registrarVenda === "function"){
-  const _registrarVenda = registrarVenda;
-  registrarVenda = function(total,payment,paid,change,notes){
-    const id=(vendas[vendas.length-1]?.id||0)+1;
-    const items=cart.map(it=>({...it}));
-
-    const sale={
-      id,
-      datetime: nowLocalISO(),
-      user: currentUser.username,
-      caixaId: currentCaixaId,
-      subtotal: items.reduce((s,it)=>s+it.price*it.qty,0),
-      discount: desconto,
-      total,
-      payment,
-      paid,
-      change,
-      items,
-      notes
-    };
-
-    vendas.push(sale);
-    LS.save("vendas",vendas);
-
-    items.forEach(it=>{
-      const p=produtos.find(x=>x.id===it.id);
-      if(p) p.stock = round2((p.stock||0)-it.qty);
-    });
-    LS.save("produtos",produtos);
-
-    cart=[]; desconto=0; previewCredito=false;
-    renderCart();
-    renderTotaisDia();
-    ultimaVenda = sale;
-    showRecibo(sale);
-  };
-}
-
-// Corrige horário exibido no recibo
-if(typeof showRecibo === "function"){
-  const _showRecibo = showRecibo;
-  showRecibo = function(v){
-    ultimaVenda = v;
-    const s=document.getElementById("recibo-sheet");
-    const itens=v.items.map(it=>`
-      <tr>
-        <td>${it.code}</td>
-        <td>${it.name}</td>
-        <td class="right">${it.qty.toFixed(3)}</td>
-        <td class="right">${fmt(it.price)}</td>
-        <td class="right">${fmt(it.qty*it.price)}</td>
-      </tr>`).join("");
-
-    s.innerHTML=`
-      <h3>${cfg.store}</h3>
-      <div style="font-size:12px;margin-bottom:8px">
-        Data: ${nowLocalStr()} • Caixa ${v.caixaId} • Venda #${v.id}
-      </div>
-      <table>
-        <thead>
-          <tr><th>Cód</th><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th></tr>
-        </thead>
-        <tbody>${itens}</tbody>
-      </table>
-      <div class="right" style="margin-top:8px">
-        Subtotal: <b>${fmt(v.subtotal)}</b><br>
-        Desconto: <b>${fmt(v.discount)}</b><br>
-        Total: <b>${fmt(v.total)}</b><br>
-        Pago: <b>${fmt(v.paid)}</b> — Troco: <b>${fmt(v.change)}</b><br>
-        Forma: <b>${v.payment}</b>
-      </div>
-      <div class="actions">
-        <button class="btn ok" onclick="printRecibo()">🖨️ Imprimir Tela</button>
-        <button class="btn err" onclick="closeRecibo()">Fechar</button>
-      </div>
-    `;
-    document.getElementById("recibo").style.display="grid";
-  };
-}
-
-console.log("✅ PATCH v3.2 — FUSO HORÁRIO CORRIGIDO");
-
-
-/* ===== PATCH v3.3 - RELATÓRIO RESUMIDO POR CAIXA ===== */
-
-function renderResumoCaixas(){
-  const wrap = document.getElementById("rel-resumo-caixas");
-  if(!wrap) return;
-
-  wrap.innerHTML = "";
-
-  caixas.forEach(cx=>{
-    const vv = vendas.filter(v=>v.caixaId === cx.id);
-
-    if(!vv.length) return;
-
-    let totals = {DINHEIRO:0,"DÉBITO":0,"CRÉDITO":0,PIX:0,MISTA:0};
-    vv.forEach(v => totals[v.payment] += v.total);
-
-    const totalGeral = Object.values(totals).reduce((a,b)=>a+b,0);
-
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <h3>Caixa ${cx.id}</h3>
-      <div class="small">
-        Abertura: ${cx.openedAt}<br>
-        Fechamento: ${cx.closedAt || "(em aberto)"}
-      </div>
-
-      <table style="margin-top:8px">
-        <tr><td>Dinheiro</td><td class="right">${fmt(totals.DINHEIRO)}</td></tr>
-        <tr><td>Débito</td><td class="right">${fmt(totals["DÉBITO"])}</td></tr>
-        <tr><td>Crédito</td><td class="right">${fmt(totals["CRÉDITO"])}</td></tr>
-        <tr><td>PIX</td><td class="right">${fmt(totals.PIX)}</td></tr>
-        <tr><td>Misto</td><td class="right">${fmt(totals.MISTA)}</td></tr>
-        <tr><th>Total</th><th class="right">${fmt(totalGeral)}</th></tr>
-      </table>
-
-      <div class="row" style="margin-top:8px">
-        <button class="btn" onclick="toggleVendasCaixa('${cx.id}')">
-          Ver vendas (${vv.length})
-        </button>
-      </div>
-
-      <div id="vx-${cx.id}" style="display:none;margin-top:10px"></div>
-    `;
-    wrap.appendChild(card);
-
-    const vx = card.querySelector("#vx-"+cx.id);
-    vv.forEach(v=>{
-      vx.innerHTML += `
-        <div class="row small">
-          #${v.id} — ${v.datetime} — ${fmt(v.total)}
-          <button class="btn" onclick="showRecibo(vendas.find(x=>x.id===${v.id}))">🖨️</button>
-        </div>`;
-    });
-  });
-}
-
-function toggleVendasCaixa(id){
-  const el = document.getElementById("vx-"+id);
-  if(!el) return;
-  el.style.display = el.style.display === "none" ? "block" : "none";
-}
-
-// Injeta nova aba no relatório
-const _runRelOld = runRel;
-runRel = function(){
-  _runRelOld();
-  renderResumoCaixasFiltrado();
-};
-
-
-// ==== Resumo de Caixas FILTRADO por período ====
-function renderResumoCaixasFiltrado(){
-  const wrap = document.getElementById("rel-resumo-caixas");
-  if(!wrap) return;
-
-  const de  = document.getElementById("r-de")?.value || todayISO();
-  const ate = document.getElementById("r-ate")?.value || todayISO();
-
-  wrap.innerHTML = "";
-
-  const vendasPeriodo = vendas.filter(v =>
-    v.datetime >= de &&
-    v.datetime <= ate + "T23:59:59"
-  );
-
-  const caixasUsados = [...new Set(vendasPeriodo.map(v => v.caixaId))];
-
-  caixas
-    .filter(cx => caixasUsados.includes(cx.id))
-    .forEach(cx => {
-
-      const vv = vendasPeriodo.filter(v => v.caixaId === cx.id);
-      if(!vv.length) return;
-
-      const totals = {DINHEIRO:0,"DÉBITO":0,"CRÉDITO":0,PIX:0,MISTO:0};
-
-      vv.forEach(v=>{
-        if(totals[v.payment] !== undefined){
-          totals[v.payment] += v.total;
-        }
-      });
-
-      const totalGeral = Object.values(totals).reduce((a,b)=>a+b,0);
-
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <h3>Caixa ${cx.id}</h3>
-        <div class="small">
-          Abertura: ${cx.openedAt}<br>
-          Fechamento: ${cx.closedAt || "(em aberto)"}
-        </div>
-
-        <table style="margin-top:8px">
-          <tr><td>Dinheiro</td><td class="right">${fmt(totals.DINHEIRO)}</td></tr>
-          <tr><td>Débito</td><td class="right">${fmt(totals["DÉBITO"])}</td></tr>
-          <tr><td>Crédito</td><td class="right">${fmt(totals["CRÉDITO"])}</td></tr>
-          <tr><td>PIX</td><td class="right">${fmt(totals.PIX)}</td></tr>
-          <tr><td>Misto</td><td class="right">${fmt(totals.MISTO)}</td></tr>
-          <tr><th>Total</th><th class="right">${fmt(totalGeral)}</th></tr>
-        </table>
-
-        <button class="btn" onclick="toggleVendasCaixa('${cx.id}')">
-          Ver vendas (${vv.length})
-        </button>
-
-        <div id="vx-${cx.id}" style="display:none;margin-top:10px"></div>
-      `;
-
-      wrap.appendChild(card);
-
-      const vx = card.querySelector("#vx-"+cx.id);
-      vv.forEach(v=>{
-        vx.innerHTML += `
-          <div class="row small">
-            #${v.id} — ${v.datetime} — ${fmt(v.total)}
-            <button class="btn" onclick="showRecibo(vendas.find(x=>x.id===${v.id}))">🖨️</button>
-          </div>`;
-      });
-    });
-}
-document.addEventListener("keydown", e=>{
-  const busca = document.getElementById("busca");
-  const qtd   = document.getElementById("qtd");
-  const sugs  = document.getElementById("sugs");
-
-  if(document.activeElement !== busca) return;
-  if(!sugs || sugs.style.display === "none") return;
-
-  const items = sugs.querySelectorAll("div");
-
-  if(e.key === "ArrowDown"){
-    e.preventDefault();
-    sugIndex = (sugIndex + 1) % items.length;
+    y1 = y;
   }
 
-  if(e.key === "ArrowUp"){
-    e.preventDefault();
-    sugIndex = (sugIndex - 1 + items.length) % items.length;
+  // quando coluna 1 encher → vai pra coluna 2
+  if(!usarColuna2 && y1 > 250){
+    usarColuna2 = true;
   }
 
-  items.forEach((el,i)=>{
-    el.style.background = i === sugIndex ? "#2a3550" : "";
-  });
-
-  if(e.key === "Enter"){
-    e.preventDefault();
-
-    if(items.length === 1){
-      busca.value = sugList[0].code;
-    }else if(sugIndex >= 0){
-      busca.value = sugList[sugIndex].code;
-    }else{
-      return;
-    }
-
-    sugs.style.display = "none";
-    sugSelected = true;
-
-    qtd.focus();
-    qtd.select();
+  // se coluna 2 encher → nova página
+  if(usarColuna2 && y2 > 250){
+    doc.addPage();
+    y1 = 20;
+    y2 = 20;
+    usarColuna2 = false;
   }
-});
+ }
+
+ // 🔥 RESUMO
+ let salario = f.salario || 0;
+ let carga = f.carga || 1;
+
+ let salarioQuinzena = salario / 2;
+ let valorDia = salario / 30;
+ let valorHora = valorDia / carga;
+
+ let faltas = (hist.innerText.match(/FALTA/g)||[]).length;
+ let saldoHoras = 0;
+
+ reg.forEach(r=>{
+  if(r.func==lista.value) saldoHoras += (r.diff||0);
+ });
+
+ let descontoFaltas = faltas * valorDia;
+ let ajusteHoras = saldoHoras * valorHora;
+ let totalFinal = salarioQuinzena - descontoFaltas + ajusteHoras;
+
+ let yFinal = Math.max(y1, y2) + 10;
+
+ doc.setFontSize(12);
+ doc.text(`Salário da quinzena: R$ ${salarioQuinzena.toFixed(2)}`,10,yFinal); yFinal+=6;
+ doc.text(`Faltas: ${faltas}`,10,yFinal); yFinal+=6;
+ doc.text(`Desconto: R$ ${descontoFaltas.toFixed(2)}`,10,yFinal); yFinal+=6;
+ doc.text(`Extras: R$ ${ajusteHoras.toFixed(2)}`,10,yFinal); yFinal+=6;
+
+ doc.setFontSize(13);
+ doc.text(`TOTAL: R$ ${totalFinal.toFixed(2)}`,10,yFinal+4);
+
+ yFinal+=20;
+ doc.text("__________________________",10,yFinal);
+ doc.text("Assinatura",10,yFinal+5);
+
+ doc.save("relatorio.pdf");
+}
+function travar(){
+ let chave="lock_"+lista.value+"_"+filtroPeriodo.value;
+ localStorage.setItem(chave,true);
+ alert("Quinzena travada!");
+}
+
+function exportar(){
+ let dados={
+  f: JSON.parse(localStorage.getItem('f')||'[]'),
+  reg: JSON.parse(localStorage.getItem('reg')||'[]')
+ };
+ let blob=new Blob([JSON.stringify(dados)],{type:"application/json"});
+ let a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download="backup.json";
+ a.click();
+}
+
+function importar(e){
+ let file=e.target.files[0];
+ let reader=new FileReader();
+ reader.onload=function(evt){
+  let dados=JSON.parse(evt.target.result);
+  localStorage.setItem('f',JSON.stringify(dados.f||[]));
+  localStorage.setItem('reg',JSON.stringify(dados.reg||[]));
+  carregar();
+  alert("Importado!");
+ };
+ reader.readAsText(file);
+}
+
+carregar();
 
 </script>
 
