@@ -7,19 +7,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body {
-  font-family: Arial;
+body{
+  font-family:Arial;
   background:#f0f2f5;
   padding:10px;
   margin:0;
 }
 
-.container {
+.container{
   max-width:600px;
   margin:auto;
 }
 
-.card {
+.card{
   background:#fff;
   padding:12px;
   margin-bottom:10px;
@@ -27,23 +27,26 @@ body {
   box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-h2 { text-align:center; }
+h2{
+  text-align:center;
+}
 
-input, select {
+input,select{
   width:100%;
   padding:10px;
   margin:6px 0;
   border-radius:8px;
   border:1px solid #bbb;
   background:#fff;
+  box-sizing:border-box;
 }
 
-input:focus {
+input:focus{
   border:2px solid #007bff;
   background:#eef7ff;
 }
 
-button {
+button{
   width:100%;
   padding:10px;
   border:none;
@@ -53,22 +56,38 @@ button {
   margin-top:5px;
 }
 
-.btn-save { background:#28a745; }
-.btn-delete { background:#dc3545; }
-.btn-view { background:#007bff; }
-.btn-pdf { background:#6f42c1; }
-.btn-lock { background:#343a40; }
+.btn-save{ background:#28a745; }
+.btn-delete{ background:#dc3545; }
+.btn-view{ background:#007bff; }
+.btn-pdf{ background:#6f42c1; }
+.btn-lock{ background:#343a40; }
+.btn-export{ background:#5ac85a; }
 
-.box {
+.box{
   padding:8px;
   margin:5px 0;
   border-radius:6px;
 }
 
-.trabalho { background:#e6ffe6; border-left:4px solid green; }
-.falta { background:#ffe6e6; border-left:4px solid red; }
-.folga { background:#e6f0ff; border-left:4px solid blue; }
+.trabalho{
+  background:#e6ffe6;
+  border-left:4px solid green;
+}
 
+.falta{
+  background:#ffe6e6;
+  border-left:4px solid red;
+}
+
+.folga{
+  background:#e6f0ff;
+  border-left:4px solid blue;
+}
+
+small{
+  color:#666;
+  font-size:12px;
+}
 </style>
 </head>
 
@@ -79,32 +98,86 @@ button {
 <h2>Mini RH</h2>
 
 <div class="card">
+
 <h3>Cadastro</h3>
+
 <input id="nome" placeholder="Nome">
+
 <input type="date" id="inicio">
-<input id="folga" type="number" placeholder="Folga: 0=Seg ... 6=Dom">
-<input id="salario" type="number" placeholder="Salário mensal">
-<input id="carga" type="number" placeholder="Carga diária (horas)">
-<button class="btn-save" onclick="salvarFunc()">Salvar Funcionário</button>
+
+<input
+id="folga"
+type="number"
+placeholder="Folga: 0=Seg ... 6=Dom">
+
+<input
+id="salario"
+type="number"
+placeholder="Salário mensal">
+
+<input
+id="carga"
+type="number"
+placeholder="Carga diária (horas)">
+
+<button
+class="btn-save"
+onclick="salvarFunc()">
+Salvar Funcionário
+</button>
+
 </div>
 
 <div class="card">
+
 <h3>Funcionário</h3>
+
 <select id="lista"></select>
 
-<button class="btn-delete" onclick="excluirFunc()">Excluir</button>
+<button
+class="btn-delete"
+onclick="excluirFunc()">
+Excluir
+</button>
 
-<input id="filtroPeriodo" type="number" value="0">
+<label style="font-size:13px;color:#666;">
+Quinzena atual
+</label>
 
-<button class="btn-view" onclick="mostrar()">Ver</button>
-<button class="btn-lock" onclick="travar()">Travar Quinzena</button>
-<button class="btn-pdf" onclick="gerarPDF()">Gerar PDF</button>
+<input id="filtroPeriodo" type="number">
 
-<button onclick="exportar()">Exportar JSON</button>
+<small id="infoQuinzena"></small>
+
+<button
+class="btn-view"
+onclick="mostrar()">
+Ver
+</button>
+
+<button
+class="btn-lock"
+onclick="travar()">
+Travar Quinzena
+</button>
+
+<button
+class="btn-pdf"
+onclick="gerarPDF()">
+Gerar PDF
+</button>
+
+<button
+class="btn-export"
+onclick="exportar()">
+Exportar JSON
+</button>
+
 <input type="file" onchange="importar(event)">
+
 </div>
 
 <div class="card">
+
 <h3>Registro do Dia</h3>
 
 <label>📅 Data</label>
@@ -122,28 +195,42 @@ button {
 <label>☕ Intervalo volta</label>
 <input type="time" id="iv">
 
-<button class="btn-save" onclick="registrar()">Salvar / Atualizar</button>
+<button
+class="btn-save"
+onclick="registrar()">
+Salvar / Atualizar
+</button>
 
 </div>
 
 <div id="hist"></div>
+
 <div id="total" class="card"></div>
+
+</div>
+
 <script>
 
 function min(t){
+
  if(!t) return 0;
- var p=t.split(':');
- return p[0]*60 + parseInt(p[1]);
+
+ let p=t.split(':');
+
+ return (parseInt(p[0])*60)+parseInt(p[1]);
 }
 
 function salvarFunc(){
+
  let l=JSON.parse(localStorage.getItem('f')||'[]');
 
  if(!nome.value || !salario.value || !carga.value){
+
   return alert("Preencha nome, salário e carga!");
  }
 
  l.push({
+
   nome:nome.value,
   inicio:inicio.value,
   folga:parseInt(folga.value),
@@ -152,47 +239,112 @@ function salvarFunc(){
  });
 
  localStorage.setItem('f',JSON.stringify(l));
+
  carregar();
+
+ autoQuinzena();
 }
 
 function excluirFunc(){
+
  if(!confirm("Tem certeza que deseja excluir?")) return;
+
  let l=JSON.parse(localStorage.getItem('f')||'[]');
+
  l.splice(lista.value,1);
+
  localStorage.setItem('f',JSON.stringify(l));
+
  carregar();
+
+ autoQuinzena();
 }
 
 function carregar(){
+
  let l=JSON.parse(localStorage.getItem('f')||'[]');
+
  lista.innerHTML='';
+
  l.forEach((f,i)=>{
-  lista.innerHTML+=`<option value="${i}">${f.nome}</option>`;
+
+  lista.innerHTML+=`
+  <option value="${i}">
+  ${f.nome}
+  </option>`;
  });
+}
+
+function autoQuinzena(){
+
+ let funcs=JSON.parse(localStorage.getItem('f')||'[]');
+
+ if(funcs.length===0) return;
+
+ let idx=lista.value || 0;
+
+ let f=funcs[idx];
+
+ if(!f || !f.inicio) return;
+
+ let hoje=new Date();
+
+ let admissao=new Date(f.inicio);
+
+ let dias=Math.floor(
+  (hoje-admissao)/(1000*60*60*24)
+ );
+
+ if(dias<0) dias=0;
+
+ let quinzena=Math.floor(dias/15);
+
+ filtroPeriodo.value=quinzena;
+
+ infoQuinzena.innerHTML=
+ "Quinzena automática atual: "+quinzena;
 }
 
 function registrar(){
 
- if(!data.value) return alert("Informe a data");
+ if(!data.value){
 
- let f=JSON.parse(localStorage.getItem('f'))[lista.value];
+  return alert("Informe a data");
+ }
+
+ let funcs=JSON.parse(localStorage.getItem('f')||'[]');
+
+ let f=funcs[lista.value];
 
  let e=min(entrada.value);
+
  let s=min(saida.value);
+
  let i1=min(is.value);
+
  let i2=min(iv.value);
 
  let total=s-e;
- if(i1 && i2) total -= (i2-i1);
+
+ if(i1 && i2){
+
+  total -= (i2-i1);
+ }
 
  let h=total/60;
+
+ if(h<0 || !isFinite(h)) h=0;
+
  let d=h-f.carga;
 
  let reg=JSON.parse(localStorage.getItem('reg')||'[]');
 
- reg = reg.filter(r=>!(r.func==lista.value && r.data==data.value));
+ reg=reg.filter(r=>
+ !(r.func==lista.value && r.data==data.value)
+ );
 
  reg.push({
+
   func:lista.value,
   data:data.value,
   entrada:entrada.value,
@@ -204,217 +356,425 @@ function registrar(){
  });
 
  localStorage.setItem('reg',JSON.stringify(reg));
- alert("Salvo!");
+
+ alert("Registro salvo!");
 }
+
 function mostrar(){
 
  let f=JSON.parse(localStorage.getItem('f'))[lista.value];
+
  let reg=JSON.parse(localStorage.getItem('reg')||'[]');
 
  let inicio=new Date(f.inicio);
- inicio.setDate(inicio.getDate()+filtroPeriodo.value*15);
+
+ inicio.setDate(
+  inicio.getDate()+
+  (parseInt(filtroPeriodo.value||0)*15)
+ );
 
  let fim=new Date(inicio);
+
  fim.setDate(fim.getDate()+14);
 
  let html="";
+
  let faltas=0;
+
  let saldoHoras=0;
 
- for(let d=new Date(inicio); d<=fim; d.setDate(d.getDate()+1)){
+ for(
+  let d=new Date(inicio);
+  d<=fim;
+  d.setDate(d.getDate()+1)
+ ){
 
   let dataStr=d.toISOString().split('T')[0];
+
   let diaSemana=d.getDay();
 
-  let r=reg.find(x=>x.func==lista.value && x.data==dataStr);
+  let r=reg.find(x=>
+
+   x.func==lista.value &&
+   x.data==dataStr
+  );
 
   if(diaSemana==f.folga){
-    html+=`<div class="box folga">${dataStr} - FOLGA</div>`;
+
+   html+=`
+   <div class="box folga">
+   ${dataStr} - FOLGA
+   </div>`;
   }
+
   else if(r){
 
-    html+=`
-    <div class="box trabalho">
-      ${dataStr}<br>
-      ⏰ ${r.entrada||"--"} → ${r.saida||"--"}<br>
-      ☕ ${r.is||"--"} - ${r.iv||"--"}<br>
-      ⌛ ${r.horas.toFixed(2)}h
-    </div>`;
+   html+=`
 
-    saldoHoras += (r.diff || 0);
+   <div class="box trabalho">
+
+   ${dataStr}<br>
+
+   ⏰ ${r.entrada||"--"}
+   →
+   ${r.saida||"--"}<br>
+
+   ☕ ${r.is||"--"}
+   -
+   ${r.iv||"--"}<br>
+
+   ⌛ ${r.horas.toFixed(2)}h
+
+   </div>`;
+
+   saldoHoras += (r.diff || 0);
   }
+
   else{
-    html+=`<div class="box falta">${dataStr} - FALTA</div>`;
-    faltas++;
+
+   html+=`
+   <div class="box falta">
+   ${dataStr} - FALTA
+   </div>`;
+
+   faltas++;
   }
  }
 
  hist.innerHTML=html;
 
- let salario = f.salario || 0;
- let carga = f.carga || 1;
+ let salario=f.salario || 0;
 
- let salarioQuinzena = salario / 2;
- let valorDia = salario / 30;
- let valorHora = valorDia / carga;
+ let carga=f.carga || 1;
 
- let descontoFaltas = faltas * valorDia;
- let ajusteHoras = saldoHoras * valorHora;
+ let salarioQuinzena=salario/2;
 
- let totalFinal = salarioQuinzena - descontoFaltas + ajusteHoras;
+ let valorDia=salario/30;
+
+ let valorHora=valorDia/carga;
+
+ let descontoFaltas=faltas*valorDia;
+
+ let ajusteHoras=saldoHoras*valorHora;
+
+ let totalFinal=
+ salarioQuinzena
+ - descontoFaltas
+ + ajusteHoras;
 
  total.innerHTML=`
- Salário da quinzena: R$ ${salarioQuinzena.toFixed(2)}<br>
- Faltas: ${faltas}<br>
- Desconto faltas: R$ ${descontoFaltas.toFixed(2)}<br>
- ${ajusteHoras>=0 ? "Extra horas: R$ "+ajusteHoras.toFixed(2) : "Desconto horas: R$ "+Math.abs(ajusteHoras).toFixed(2)}<br><br>
- <b>Total: R$ ${totalFinal.toFixed(2)}</b>
+
+ Salário da quinzena:
+ R$ ${salarioQuinzena.toFixed(2)}<br>
+
+ Faltas:
+ ${faltas}<br>
+
+ Desconto faltas:
+ R$ ${descontoFaltas.toFixed(2)}<br>
+
+ ${ajusteHoras>=0
+ ? "Extra horas: R$ "+ajusteHoras.toFixed(2)
+ : "Desconto horas: R$ "+Math.abs(ajusteHoras).toFixed(2)
+ }<br><br>
+
+ <b>
+ Total:
+ R$ ${totalFinal.toFixed(2)}
+ </b>
  `;
 }
 
 function gerarPDF(){
 
  const { jsPDF } = window.jspdf;
- let doc = new jsPDF();
+
+ let doc=new jsPDF();
 
  let f=JSON.parse(localStorage.getItem('f'))[lista.value];
+
  let reg=JSON.parse(localStorage.getItem('reg')||'[]');
 
  let inicio=new Date(f.inicio);
- inicio.setDate(inicio.getDate()+filtroPeriodo.value*15);
+
+ inicio.setDate(
+  inicio.getDate()+
+  (parseInt(filtroPeriodo.value||0)*15)
+ );
 
  let fim=new Date(inicio);
+
  fim.setDate(fim.getDate()+14);
 
- let col1X = 10;
- let col2X = 110;
- let y1 = 20;
- let y2 = 20;
+ let col1X=10;
+ let col2X=110;
 
- let usarColuna2 = false;
+ let y1=20;
+ let y2=20;
+
+ let coluna2=false;
 
  doc.setFontSize(14);
+
  doc.text("RELATÓRIO QUINZENAL",10,10);
 
- for(let d=new Date(inicio); d<=fim; d.setDate(d.getDate()+1)){
+ let faltas=0;
+ let saldoHoras=0;
+
+ for(
+  let d=new Date(inicio);
+  d<=fim;
+  d.setDate(d.getDate()+1)
+ ){
 
   let dataStr=d.toISOString().split('T')[0];
+
   let diaSemana=d.getDay();
-  let r=reg.find(x=>x.func==lista.value && x.data==dataStr);
+
+  let r=reg.find(x=>
+
+   x.func==lista.value &&
+   x.data==dataStr
+  );
 
   let linhas=[];
 
   if(diaSemana==f.folga){
-    linhas.push(`${dataStr} - FOLGA`);
-  }
-  else if(r){
-    linhas.push(`Data: ${dataStr}`);
-    linhas.push(`Entrada: ${r.entrada||"--"}  Saída: ${r.saida||"--"}`);
-    linhas.push(`Intervalo: ${r.is||"--"} - ${r.iv||"--"}`);
-    linhas.push(`Horas: ${r.horas.toFixed(2)}h`);
-  }
-  else{
-    linhas.push(`${dataStr} - FALTA`);
+
+   linhas.push(`${dataStr} - FOLGA`);
   }
 
-  let x = usarColuna2 ? col2X : col1X;
-  let y = usarColuna2 ? y2 : y1;
+  else if(r){
+
+   linhas.push(`Data: ${dataStr}`);
+
+   linhas.push(
+   `Entrada: ${r.entrada||"--"}  Saída: ${r.saida||"--"}`
+   );
+
+   linhas.push(
+   `Intervalo: ${r.is||"--"} - ${r.iv||"--"}`
+   );
+
+   linhas.push(
+   `Horas: ${r.horas.toFixed(2)}h`
+   );
+
+   saldoHoras += (r.diff || 0);
+  }
+
+  else{
+
+   linhas.push(`${dataStr} - FALTA`);
+
+   faltas++;
+  }
+
+  let x=coluna2 ? col2X : col1X;
+
+  let y=coluna2 ? y2 : y1;
 
   linhas.forEach(l=>{
-    doc.text(l, x, y);
-    y += 5;
+
+   doc.text(l,x,y);
+
+   y+=5;
   });
 
-  y += 3; // espaço entre dias
+  y+=3;
 
-  if(usarColuna2){
-    y2 = y;
-  } else {
-    y1 = y;
+  if(coluna2){
+
+   y2=y;
   }
 
-  // quando coluna 1 encher → vai pra coluna 2
-  if(!usarColuna2 && y1 > 250){
-    usarColuna2 = true;
+  else{
+
+   y1=y;
   }
 
-  // se coluna 2 encher → nova página
-  if(usarColuna2 && y2 > 250){
-    doc.addPage();
-    y1 = 20;
-    y2 = 20;
-    usarColuna2 = false;
+  if(!coluna2 && y1>250){
+
+   coluna2=true;
+  }
+
+  if(coluna2 && y2>250){
+
+   doc.addPage();
+
+   y1=20;
+
+   y2=20;
+
+   coluna2=false;
   }
  }
 
- // 🔥 RESUMO
- let salario = f.salario || 0;
- let carga = f.carga || 1;
+ let salario=f.salario || 0;
 
- let salarioQuinzena = salario / 2;
- let valorDia = salario / 30;
- let valorHora = valorDia / carga;
+ let carga=f.carga || 1;
 
- let faltas = (hist.innerText.match(/FALTA/g)||[]).length;
- let saldoHoras = 0;
+ let salarioQuinzena=salario/2;
 
- reg.forEach(r=>{
-  if(r.func==lista.value) saldoHoras += (r.diff||0);
- });
+ let valorDia=salario/30;
 
- let descontoFaltas = faltas * valorDia;
- let ajusteHoras = saldoHoras * valorHora;
- let totalFinal = salarioQuinzena - descontoFaltas + ajusteHoras;
+ let valorHora=valorDia/carga;
 
- let yFinal = Math.max(y1, y2) + 10;
+ let descontoFaltas=faltas*valorDia;
+
+ let ajusteHoras=saldoHoras*valorHora;
+
+ let totalFinal=
+ salarioQuinzena
+ - descontoFaltas
+ + ajusteHoras;
+
+ let yFinal=Math.max(y1,y2)+10;
+
+ if(yFinal>250){
+
+  doc.addPage();
+
+  yFinal=20;
+ }
 
  doc.setFontSize(12);
- doc.text(`Salário da quinzena: R$ ${salarioQuinzena.toFixed(2)}`,10,yFinal); yFinal+=6;
- doc.text(`Faltas: ${faltas}`,10,yFinal); yFinal+=6;
- doc.text(`Desconto: R$ ${descontoFaltas.toFixed(2)}`,10,yFinal); yFinal+=6;
- doc.text(`Extras: R$ ${ajusteHoras.toFixed(2)}`,10,yFinal); yFinal+=6;
 
- doc.setFontSize(13);
- doc.text(`TOTAL: R$ ${totalFinal.toFixed(2)}`,10,yFinal+4);
+ doc.text(
+ `Salário da quinzena: R$ ${salarioQuinzena.toFixed(2)}`,
+ 10,
+ yFinal
+ );
 
- yFinal+=20;
- doc.text("__________________________",10,yFinal);
- doc.text("Assinatura",10,yFinal+5);
+ yFinal+=6;
+
+ doc.text(`Faltas: ${faltas}`,10,yFinal);
+
+ yFinal+=6;
+
+ doc.text(
+ `Desconto faltas: R$ ${descontoFaltas.toFixed(2)}`,
+ 10,
+ yFinal
+ );
+
+ yFinal+=6;
+
+ doc.text(
+ `Extras: R$ ${ajusteHoras.toFixed(2)}`,
+ 10,
+ yFinal
+ );
+
+ yFinal+=8;
+
+ doc.setFontSize(14);
+
+ doc.text(
+ `TOTAL: R$ ${totalFinal.toFixed(2)}`,
+ 10,
+ yFinal
+ );
+
+ yFinal+=18;
+
+ doc.text(
+ "__________________________",
+ 10,
+ yFinal
+ );
+
+ doc.text(
+ "Assinatura",
+ 10,
+ yFinal+5
+ );
 
  doc.save("relatorio.pdf");
 }
+
 function travar(){
- let chave="lock_"+lista.value+"_"+filtroPeriodo.value;
+
+ let chave=
+ "lock_"+
+ lista.value+
+ "_"+
+ filtroPeriodo.value;
+
  localStorage.setItem(chave,true);
+
  alert("Quinzena travada!");
 }
 
 function exportar(){
+
  let dados={
-  f: JSON.parse(localStorage.getItem('f')||'[]'),
-  reg: JSON.parse(localStorage.getItem('reg')||'[]')
+
+  f:JSON.parse(
+   localStorage.getItem('f')||'[]'
+  ),
+
+  reg:JSON.parse(
+   localStorage.getItem('reg')||'[]'
+  )
  };
- let blob=new Blob([JSON.stringify(dados)],{type:"application/json"});
+
+ let blob=new Blob(
+ [JSON.stringify(dados)],
+ {type:"application/json"}
+ );
+
  let a=document.createElement('a');
+
  a.href=URL.createObjectURL(blob);
+
  a.download="backup.json";
+
  a.click();
 }
 
 function importar(e){
+
  let file=e.target.files[0];
+
  let reader=new FileReader();
+
  reader.onload=function(evt){
+
   let dados=JSON.parse(evt.target.result);
-  localStorage.setItem('f',JSON.stringify(dados.f||[]));
-  localStorage.setItem('reg',JSON.stringify(dados.reg||[]));
+
+  localStorage.setItem(
+   'f',
+   JSON.stringify(dados.f||[])
+  );
+
+  localStorage.setItem(
+   'reg',
+   JSON.stringify(dados.reg||[])
+  );
+
   carregar();
+
+  autoQuinzena();
+
   alert("Importado!");
  };
+
  reader.readAsText(file);
 }
 
 carregar();
+
+setTimeout(()=>{
+
+ autoQuinzena();
+
+},200);
+
+lista.addEventListener("change",()=>{
+
+ autoQuinzena();
+});
 
 </script>
 
