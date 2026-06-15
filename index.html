@@ -2,11 +2,12 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Mini RH</title>
+<title>Mini RH PRO v2.1</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
+
 body{
   font-family:Arial;
   background:#f0f2f5;
@@ -88,14 +89,76 @@ small{
   color:#666;
   font-size:12px;
 }
+
+#periodoAtual{
+  margin-top:8px;
+  padding:10px;
+  background:#eef7ff;
+  border-radius:8px;
+  font-weight:bold;
+  text-align:center;
+}
+
+#statusAtualizacao{
+  font-size:13px;
+  color:#666;
+  margin-top:8px;
+}
+
 </style>
+
+<link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#ff0000">
+
+<script>
+
+if('serviceWorker' in navigator){
+
+window.addEventListener('load',()=>{
+
+navigator.serviceWorker.register(
+'service-worker.js'
+);
+
+});
+
+}
+
+</script>
+
 </head>
 
 <body>
 
 <div class="container">
 
-<h2>Mini RH</h2>
+<h2>Mini RH PRO</h2>
+
+<div class="card">
+
+<b>Versão:</b>
+<span id="versaoSistema">
+2.1
+</span>
+
+<br><br>
+
+<button
+class="btn-export"
+onclick="forcarAtualizacao()">
+
+🔄 Atualizar Aplicativo
+
+</button>
+
+<div id="statusAtualizacao">
+
+Sistema pronto.
+
+</div>
+
+</div>
 
 <div class="card">
 
@@ -123,7 +186,9 @@ placeholder="Carga diária (horas)">
 <button
 class="btn-save"
 onclick="salvarFunc()">
+
 Salvar Funcionário
+
 </button>
 
 </div>
@@ -137,42 +202,76 @@ Salvar Funcionário
 <button
 class="btn-delete"
 onclick="excluirFunc()">
+
 Excluir
+
 </button>
 
-<label style="font-size:13px;color:#666;">
-Quinzena atual
-</label>
+<button
+class="btn-view"
+onclick="quinzenaAnterior()">
 
-<input id="filtroPeriodo" type="number">
+◀ Período Anterior
 
-<small id="infoQuinzena"></small>
+</button>
+
+<button
+class="btn-save"
+onclick="quinzenaAtual()">
+
+Período Atual
+
+</button>
+
+<button
+class="btn-view"
+onclick="quinzenaProxima()">
+
+Próximo Período ▶
+
+</button>
+
+<div id="periodoAtual">
+
+Carregando período...
+
+</div>
 
 <button
 class="btn-view"
 onclick="mostrar()">
+
 Ver
+
 </button>
 
 <button
 class="btn-lock"
 onclick="travar()">
-Travar Quinzena
+
+Travar Período
+
 </button>
 
 <button
 class="btn-pdf"
 onclick="gerarPDF()">
+
 Gerar PDF
+
 </button>
 
 <button
 class="btn-export"
 onclick="exportar()">
+
 Exportar JSON
+
 </button>
 
-<input type="file" onchange="importar(event)">
+<input
+type="file"
+onchange="importar(event)">
 
 </div>
 
@@ -198,7 +297,9 @@ Exportar JSON
 <button
 class="btn-save"
 onclick="registrar()">
+
 Salvar / Atualizar
+
 </button>
 
 </div>
@@ -207,9 +308,9 @@ Salvar / Atualizar
 
 <div id="total" class="card"></div>
 
-</div>
-
 <script>
+
+let periodoOffset = 0;
 
 function min(t){
 
@@ -222,11 +323,19 @@ function min(t){
 
 function salvarFunc(){
 
- let l=JSON.parse(localStorage.getItem('f')||'[]');
+ let l=JSON.parse(
+  localStorage.getItem('f')||'[]'
+ );
 
- if(!nome.value || !salario.value || !carga.value){
+ if(
+  !nome.value ||
+  !salario.value ||
+  !carga.value
+ ){
 
-  return alert("Preencha nome, salário e carga!");
+  return alert(
+   "Preencha nome, salário e carga!"
+  );
  }
 
  l.push({
@@ -236,111 +345,208 @@ function salvarFunc(){
   folga:parseInt(folga.value),
   salario:parseFloat(salario.value),
   carga:parseFloat(carga.value)
+
  });
 
- localStorage.setItem('f',JSON.stringify(l));
+ localStorage.setItem(
+  'f',
+  JSON.stringify(l)
+ );
 
  carregar();
-
- autoQuinzena();
 }
 
 function excluirFunc(){
 
- if(!confirm("Tem certeza que deseja excluir?")) return;
+ if(
+  !confirm(
+   "Tem certeza que deseja excluir?"
+  )
+ ) return;
 
- let l=JSON.parse(localStorage.getItem('f')||'[]');
+ let l=JSON.parse(
+  localStorage.getItem('f')||'[]'
+ );
 
  l.splice(lista.value,1);
 
- localStorage.setItem('f',JSON.stringify(l));
+ localStorage.setItem(
+  'f',
+  JSON.stringify(l)
+ );
 
  carregar();
-
- autoQuinzena();
 }
 
 function carregar(){
 
- let l=JSON.parse(localStorage.getItem('f')||'[]');
+ let l=JSON.parse(
+  localStorage.getItem('f')||'[]'
+ );
 
  lista.innerHTML='';
 
  l.forEach((f,i)=>{
 
   lista.innerHTML+=`
+
   <option value="${i}">
   ${f.nome}
-  </option>`;
+  </option>
+
+  `;
  });
+
 }
 
-function autoQuinzena(){
-
- let funcs=JSON.parse(localStorage.getItem('f')||'[]');
-
- if(funcs.length===0) return;
-
- let idx=lista.value || 0;
-
- let f=funcs[idx];
-
- if(!f || !f.inicio) return;
+function obterPeriodo(){
 
  let hoje=new Date();
 
- let admissao=new Date(f.inicio);
-
- let dias=Math.floor(
-  (hoje-admissao)/(1000*60*60*24)
+ let dataBase=new Date(
+  hoje.getFullYear(),
+  hoje.getMonth()+periodoOffset,
+  hoje.getDate()
  );
 
- if(dias<0) dias=0;
+ let inicio;
+ let fim;
 
- let quinzena=Math.floor(dias/15);
+ if(dataBase.getDate()<=15){
 
- filtroPeriodo.value=quinzena;
+  inicio=new Date(
+   dataBase.getFullYear(),
+   dataBase.getMonth(),
+   1
+  );
 
- infoQuinzena.innerHTML=
- "Quinzena automática atual: "+quinzena;
+  fim=new Date(
+   dataBase.getFullYear(),
+   dataBase.getMonth(),
+   15
+  );
+
+ }else{
+
+  inicio=new Date(
+   dataBase.getFullYear(),
+   dataBase.getMonth(),
+   16
+  );
+
+  fim=new Date(
+   dataBase.getFullYear(),
+   dataBase.getMonth()+1,
+   0
+  );
+
+ }
+
+ periodoAtual.innerHTML=
+
+ inicio.toLocaleDateString(
+ "pt-BR"
+ )
+
+ +
+
+ " até "
+
+ +
+
+ fim.toLocaleDateString(
+ "pt-BR"
+ );
+
+ return {
+
+  inicio:inicio,
+  fim:fim
+
+ };
+
+}
+
+function quinzenaAnterior(){
+
+ periodoOffset--;
+
+ obterPeriodo();
+
+}
+
+function quinzenaProxima(){
+
+ periodoOffset++;
+
+ obterPeriodo();
+
+}
+
+function quinzenaAtual(){
+
+ periodoOffset=0;
+
+ obterPeriodo();
+
 }
 
 function registrar(){
 
  if(!data.value){
 
-  return alert("Informe a data");
+  return alert(
+   "Informe a data"
+  );
+
  }
 
- let funcs=JSON.parse(localStorage.getItem('f')||'[]');
+ let funcs=JSON.parse(
+  localStorage.getItem('f')||'[]'
+ );
 
  let f=funcs[lista.value];
 
  let e=min(entrada.value);
-
  let s=min(saida.value);
 
  let i1=min(is.value);
-
  let i2=min(iv.value);
 
  let total=s-e;
 
  if(i1 && i2){
 
-  total -= (i2-i1);
+  total-=(i2-i1);
+
  }
 
  let h=total/60;
 
- if(h<0 || !isFinite(h)) h=0;
+ if(
+  h<0 ||
+  !isFinite(h)
+ ){
+
+  h=0;
+
+ }
 
  let d=h-f.carga;
 
- let reg=JSON.parse(localStorage.getItem('reg')||'[]');
+ let reg=JSON.parse(
+  localStorage.getItem('reg')||'[]'
+ );
 
  reg=reg.filter(r=>
- !(r.func==lista.value && r.data==data.value)
+
+ !(
+
+  r.func==lista.value &&
+  r.data==data.value
+
+ )
+
  );
 
  reg.push({
@@ -353,58 +559,80 @@ function registrar(){
   iv:iv.value,
   horas:h,
   diff:d
+
  });
 
- localStorage.setItem('reg',JSON.stringify(reg));
+ localStorage.setItem(
+  'reg',
+  JSON.stringify(reg)
+ );
 
- alert("Registro salvo!");
+ alert(
+  "Registro salvo!"
+ );
+
 }
 
 function mostrar(){
 
- let f=JSON.parse(localStorage.getItem('f'))[lista.value];
+ let f=JSON.parse(
+  localStorage.getItem('f')
+ )[lista.value];
 
- let reg=JSON.parse(localStorage.getItem('reg')||'[]');
-
- let inicio=new Date(f.inicio);
-
- inicio.setDate(
-  inicio.getDate()+
-  (parseInt(filtroPeriodo.value||0)*15)
+ let reg=JSON.parse(
+  localStorage.getItem('reg')||'[]'
  );
 
- let fim=new Date(inicio);
+ let periodo=obterPeriodo();
 
- fim.setDate(fim.getDate()+14);
+ let inicio=periodo.inicio;
+ let fim=periodo.fim;
 
  let html="";
 
  let faltas=0;
-
  let saldoHoras=0;
 
  for(
+
   let d=new Date(inicio);
+
   d<=fim;
-  d.setDate(d.getDate()+1)
+
+  d.setDate(
+   d.getDate()+1
+  )
+
  ){
 
-  let dataStr=d.toISOString().split('T')[0];
+  let dataStr=
 
-  let diaSemana=d.getDay();
+  d.toISOString()
+  .split('T')[0];
+
+  let diaSemana=
+  d.getDay();
 
   let r=reg.find(x=>
 
    x.func==lista.value &&
    x.data==dataStr
+
   );
 
   if(diaSemana==f.folga){
 
    html+=`
+
    <div class="box folga">
-   ${dataStr} - FOLGA
-   </div>`;
+
+   ${dataStr}
+   - FOLGA
+
+   </div>
+
+   `;
+
   }
 
   else if(r){
@@ -425,42 +653,64 @@ function mostrar(){
 
    ⌛ ${r.horas.toFixed(2)}h
 
-   </div>`;
+   </div>
 
-   saldoHoras += (r.diff || 0);
+   `;
+
+   saldoHoras +=
+   (r.diff||0);
+
   }
 
   else{
 
    html+=`
+
    <div class="box falta">
-   ${dataStr} - FALTA
-   </div>`;
+
+   ${dataStr}
+   - FALTA
+
+   </div>
+
+   `;
 
    faltas++;
+
   }
+
  }
 
  hist.innerHTML=html;
 
- let salario=f.salario || 0;
+ let salario=
+ f.salario||0;
 
- let carga=f.carga || 1;
+ let carga=
+ f.carga||1;
 
- let salarioQuinzena=salario/2;
+ let salarioQuinzena=
+ salario/2;
 
- let valorDia=salario/30;
+ let valorDia=
+ salario/30;
 
- let valorHora=valorDia/carga;
+ let valorHora=
+ valorDia/carga;
 
- let descontoFaltas=faltas*valorDia;
+ let descontoFaltas=
+ faltas*valorDia;
 
- let ajusteHoras=saldoHoras*valorHora;
+ let ajusteHoras=
+ saldoHoras*valorHora;
 
  let totalFinal=
+
  salarioQuinzena
- - descontoFaltas
- + ajusteHoras;
+ -
+ descontoFaltas
+ +
+ ajusteHoras;
 
  total.innerHTML=`
 
@@ -474,307 +724,457 @@ function mostrar(){
  R$ ${descontoFaltas.toFixed(2)}<br>
 
  ${ajusteHoras>=0
- ? "Extra horas: R$ "+ajusteHoras.toFixed(2)
- : "Desconto horas: R$ "+Math.abs(ajusteHoras).toFixed(2)
+
+ ? "Extra horas: R$ "+
+ ajusteHoras.toFixed(2)
+
+ : "Desconto horas: R$ "+
+ Math.abs(
+ ajusteHoras
+ ).toFixed(2)
+
  }<br><br>
 
  <b>
+
  Total:
  R$ ${totalFinal.toFixed(2)}
+
  </b>
+
  `;
+
 }
 
 function gerarPDF(){
 
  const { jsPDF } = window.jspdf;
 
- let doc=new jsPDF();
+ let doc = new jsPDF();
 
- let f=JSON.parse(localStorage.getItem('f'))[lista.value];
+ let f = JSON.parse(
+  localStorage.getItem('f')
+ )[lista.value];
 
- let reg=JSON.parse(localStorage.getItem('reg')||'[]');
-
- let inicio=new Date(f.inicio);
-
- inicio.setDate(
-  inicio.getDate()+
-  (parseInt(filtroPeriodo.value||0)*15)
+ let reg = JSON.parse(
+  localStorage.getItem('reg') || '[]'
  );
 
- let fim=new Date(inicio);
+ let periodo = obterPeriodo();
 
- fim.setDate(fim.getDate()+14);
+ let inicio = periodo.inicio;
+ let fim = periodo.fim;
 
- let col1X=10;
- let col2X=110;
+ let col1X = 10;
+ let col2X = 110;
 
- let y1=20;
- let y2=20;
+ let y1 = 25;
+ let y2 = 25;
 
- let coluna2=false;
+ let coluna2 = false;
 
  doc.setFontSize(14);
 
- doc.text("RELATÓRIO QUINZENAL",10,10);
+ doc.text(
+  "MINI RH PRO v2.1",
+  10,
+  10
+ );
 
- let faltas=0;
- let saldoHoras=0;
+ doc.setFontSize(11);
+
+ doc.text(
+  periodoAtual.innerText,
+  10,
+  18
+ );
+
+ let faltas = 0;
+ let saldoHoras = 0;
 
  for(
-  let d=new Date(inicio);
-  d<=fim;
+  let d = new Date(inicio);
+  d <= fim;
   d.setDate(d.getDate()+1)
  ){
 
-  let dataStr=d.toISOString().split('T')[0];
+  let dataStr =
+  d.toISOString().split('T')[0];
 
-  let diaSemana=d.getDay();
+  let diaSemana = d.getDay();
 
-  let r=reg.find(x=>
+  let r = reg.find(x=>
 
-   x.func==lista.value &&
-   x.data==dataStr
+   x.func == lista.value &&
+   x.data == dataStr
+
   );
 
   let linhas=[];
 
-  if(diaSemana==f.folga){
-
-   linhas.push(`${dataStr} - FOLGA`);
-  }
-
-  else if(r){
-
-   linhas.push(`Data: ${dataStr}`);
+  if(diaSemana == f.folga){
 
    linhas.push(
-   `Entrada: ${r.entrada||"--"}  Saída: ${r.saida||"--"}`
+    `${dataStr} - FOLGA`
+   );
+
+  }else if(r){
+
+   linhas.push(
+    `Data: ${dataStr}`
    );
 
    linhas.push(
-   `Intervalo: ${r.is||"--"} - ${r.iv||"--"}`
+    `Entrada: ${r.entrada||"--"}`
    );
 
    linhas.push(
-   `Horas: ${r.horas.toFixed(2)}h`
+    `Saída: ${r.saida||"--"}`
    );
 
-   saldoHoras += (r.diff || 0);
-  }
+   linhas.push(
+    `Intervalo: ${r.is||"--"} - ${r.iv||"--"}`
+   );
 
-  else{
+   linhas.push(
+    `Horas: ${r.horas.toFixed(2)}h`
+   );
 
-   linhas.push(`${dataStr} - FALTA`);
+   saldoHoras +=
+   (r.diff || 0);
+
+  }else{
+
+   linhas.push(
+    `${dataStr} - FALTA`
+   );
 
    faltas++;
   }
 
-  let x=coluna2 ? col2X : col1X;
+  let x =
+  coluna2 ? col2X : col1X;
 
-  let y=coluna2 ? y2 : y1;
+  let y =
+  coluna2 ? y2 : y1;
 
   linhas.forEach(l=>{
 
    doc.text(l,x,y);
 
-   y+=5;
+   y += 5;
+
   });
 
-  y+=3;
+  y += 3;
 
   if(coluna2){
-
-   y2=y;
+   y2 = y;
+  }else{
+   y1 = y;
   }
 
-  else{
-
-   y1=y;
+  if(!coluna2 && y1 > 240){
+   coluna2 = true;
   }
 
-  if(!coluna2 && y1>250){
-
-   coluna2=true;
-  }
-
-  if(coluna2 && y2>250){
-
-   doc.addPage();
-
-   y1=20;
-
-   y2=20;
-
-   coluna2=false;
-  }
  }
 
- let salario=f.salario || 0;
+ let salario =
+ f.salario || 0;
 
- let carga=f.carga || 1;
+ let carga =
+ f.carga || 1;
 
- let salarioQuinzena=salario/2;
+ let salarioQuinzena =
+ salario / 2;
 
- let valorDia=salario/30;
+ let valorDia =
+ salario / 30;
 
- let valorHora=valorDia/carga;
+ let valorHora =
+ valorDia / carga;
 
- let descontoFaltas=faltas*valorDia;
+ let descontoFaltas =
+ faltas * valorDia;
 
- let ajusteHoras=saldoHoras*valorHora;
+ let ajusteHoras =
+ saldoHoras * valorHora;
 
- let totalFinal=
+ let totalFinal =
  salarioQuinzena
  - descontoFaltas
  + ajusteHoras;
 
- let yFinal=Math.max(y1,y2)+10;
+ let yFinal =
+ Math.max(y1,y2)+10;
 
- if(yFinal>250){
+ if(yFinal > 250){
 
   doc.addPage();
 
-  yFinal=20;
+  yFinal = 20;
+
  }
 
  doc.setFontSize(12);
 
  doc.text(
- `Salário da quinzena: R$ ${salarioQuinzena.toFixed(2)}`,
- 10,
- yFinal
+  `Salário da quinzena: R$ ${salarioQuinzena.toFixed(2)}`,
+  10,
+  yFinal
  );
 
- yFinal+=6;
-
- doc.text(`Faltas: ${faltas}`,10,yFinal);
-
- yFinal+=6;
+ yFinal += 6;
 
  doc.text(
- `Desconto faltas: R$ ${descontoFaltas.toFixed(2)}`,
- 10,
- yFinal
+  `Faltas: ${faltas}`,
+  10,
+  yFinal
  );
 
- yFinal+=6;
+ yFinal += 6;
 
  doc.text(
- `Extras: R$ ${ajusteHoras.toFixed(2)}`,
- 10,
- yFinal
+  `Desconto faltas: R$ ${descontoFaltas.toFixed(2)}`,
+  10,
+  yFinal
  );
 
- yFinal+=8;
+ yFinal += 6;
+
+ doc.text(
+  `Ajuste horas: R$ ${ajusteHoras.toFixed(2)}`,
+  10,
+  yFinal
+ );
+
+ yFinal += 8;
 
  doc.setFontSize(14);
 
  doc.text(
- `TOTAL: R$ ${totalFinal.toFixed(2)}`,
- 10,
- yFinal
+  `TOTAL: R$ ${totalFinal.toFixed(2)}`,
+  10,
+  yFinal
  );
 
- yFinal+=18;
+ yFinal += 20;
+
+ doc.line(
+  10,
+  yFinal,
+  100,
+  yFinal
+ );
 
  doc.text(
- "__________________________",
- 10,
- yFinal
+  "Assinatura",
+  10,
+  yFinal+5
  );
 
- doc.text(
- "Assinatura",
- 10,
- yFinal+5
+ doc.save(
+  "relatorio.pdf"
  );
-
- doc.save("relatorio.pdf");
 }
 
 function travar(){
 
- let chave=
- "lock_"+
- lista.value+
- "_"+
- filtroPeriodo.value;
+ let chave =
+ "lock_" +
+ periodoAtual.innerText;
 
- localStorage.setItem(chave,true);
+ localStorage.setItem(
+  chave,
+  true
+ );
 
- alert("Quinzena travada!");
+ alert(
+  "Período travado!"
+ );
 }
 
 function exportar(){
 
- let dados={
+ let dados = {
 
-  f:JSON.parse(
+  f: JSON.parse(
    localStorage.getItem('f')||'[]'
   ),
 
-  reg:JSON.parse(
+  reg: JSON.parse(
    localStorage.getItem('reg')||'[]'
   )
+
  };
 
- let blob=new Blob(
- [JSON.stringify(dados)],
- {type:"application/json"}
+ let blob = new Blob(
+  [JSON.stringify(dados)],
+  {
+   type:"application/json"
+  }
  );
 
- let a=document.createElement('a');
+ let a =
+ document.createElement('a');
 
- a.href=URL.createObjectURL(blob);
+ a.href =
+ URL.createObjectURL(blob);
 
- a.download="backup.json";
+ a.download =
+ "backup.json";
 
  a.click();
 }
 
 function importar(e){
 
- let file=e.target.files[0];
+ let file =
+ e.target.files[0];
 
- let reader=new FileReader();
+ let reader =
+ new FileReader();
 
  reader.onload=function(evt){
 
-  let dados=JSON.parse(evt.target.result);
+  let dados =
+  JSON.parse(
+   evt.target.result
+  );
 
   localStorage.setItem(
    'f',
-   JSON.stringify(dados.f||[])
+   JSON.stringify(
+    dados.f||[]
+   )
   );
 
   localStorage.setItem(
    'reg',
-   JSON.stringify(dados.reg||[])
+   JSON.stringify(
+    dados.reg||[]
+   )
   );
 
   carregar();
 
-  autoQuinzena();
+  quinzenaAtual();
 
-  alert("Importado!");
+  alert(
+   "Backup restaurado!"
+  );
+
  };
 
  reader.readAsText(file);
 }
 
+/* ===== SISTEMA DE ATUALIZAÇÃO ===== */
+
+function registrarAbertura(){
+
+ let agora =
+ new Date();
+
+ let status =
+ document.getElementById(
+  "statusAtualizacao"
+ );
+
+ if(status){
+
+  status.innerHTML =
+  "Última verificação: " +
+  agora.toLocaleString("pt-BR");
+
+ }
+
+}
+
+async function forcarAtualizacao(){
+
+ try{
+
+  let status =
+  document.getElementById(
+   "statusAtualizacao"
+  );
+
+  if(status){
+
+   status.innerHTML =
+   "Limpando cache...";
+  }
+
+  if('serviceWorker' in navigator){
+
+   let registros =
+   await navigator
+   .serviceWorker
+   .getRegistrations();
+
+   for(let reg of registros){
+
+    await reg.unregister();
+
+   }
+
+   let keys =
+   await caches.keys();
+
+   for(let key of keys){
+
+    await caches.delete(key);
+
+   }
+
+  }
+
+  if(status){
+
+   status.innerHTML =
+   "Atualizando...";
+  }
+
+  setTimeout(()=>{
+
+   location.reload(true);
+
+  },1000);
+
+ }
+ catch(e){
+
+  alert(
+   "Erro ao atualizar: " +
+   e.message
+  );
+
+ }
+
+}
+
+/* ===== INICIALIZAÇÃO ===== */
+
 carregar();
+
+registrarAbertura();
 
 setTimeout(()=>{
 
- autoQuinzena();
+ quinzenaAtual();
 
 },200);
 
-lista.addEventListener("change",()=>{
+lista.addEventListener(
+ "change",
+ ()=>{
 
- autoQuinzena();
-});
+  quinzenaAtual();
+
+ }
+);
 
 </script>
 
