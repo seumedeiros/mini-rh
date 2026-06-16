@@ -1,7 +1,7 @@
 {
-  "name": "Mini RH PRO",
-  "short_name": "Mini RH PRO",
-  "description": "Programa para contabilidade ",
+  "name": "Mini RH Pro",
+  "short_name": "MiniRH ",
+  "description": "Mini RH Pro",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#111111",

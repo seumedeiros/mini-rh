@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "minirhpro-v2-1";
+const CACHE_NAME = "minirhpro-v2-4";
 
 const urlsToCache = [
 "./",

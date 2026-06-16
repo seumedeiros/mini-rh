@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Mini RH PRO v2.1</title>
+<title>Mini RH PRO v2.4</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -16,7 +16,7 @@ body{
 }
 
 .container{
-  max-width:600px;
+  max-width:700px;
   margin:auto;
 }
 
@@ -25,26 +25,29 @@ body{
   padding:12px;
   margin-bottom:10px;
   border-radius:10px;
-  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+  box-shadow:0 2px 5px rgba(0,0,0,.1);
 }
 
 h2{
   text-align:center;
 }
 
-input,select{
+h3{
+  margin-top:0;
+}
+
+input,select,textarea{
   width:100%;
   padding:10px;
   margin:6px 0;
   border-radius:8px;
   border:1px solid #bbb;
-  background:#fff;
   box-sizing:border-box;
 }
 
-input:focus{
-  border:2px solid #007bff;
-  background:#eef7ff;
+textarea{
+  min-height:80px;
+  resize:vertical;
 }
 
 button{
@@ -57,12 +60,37 @@ button{
   margin-top:5px;
 }
 
-.btn-save{ background:#28a745; }
-.btn-delete{ background:#dc3545; }
-.btn-view{ background:#007bff; }
-.btn-pdf{ background:#6f42c1; }
-.btn-lock{ background:#343a40; }
-.btn-export{ background:#5ac85a; }
+.btn-save{
+  background:#28a745;
+}
+
+.btn-delete{
+  background:#dc3545;
+}
+
+.btn-view{
+  background:#007bff;
+}
+
+.btn-pdf{
+  background:#6f42c1;
+}
+
+.btn-lock{
+  background:#343a40;
+}
+
+.btn-export{
+  background:#5ac85a;
+}
+
+.btn-compra{
+  background:#ff9800;
+}
+
+.btn-pagamento{
+  background:#00bcd4;
+}
 
 .box{
   padding:8px;
@@ -85,24 +113,37 @@ button{
   border-left:4px solid blue;
 }
 
-small{
-  color:#666;
-  font-size:12px;
+.compra{
+  background:#fff3cd;
+  border-left:4px solid #ff9800;
+}
+
+.pagamento{
+  background:#d4edda;
+  border-left:4px solid #28a745;
 }
 
 #periodoAtual{
-  margin-top:8px;
+  text-align:center;
   padding:10px;
   background:#eef7ff;
   border-radius:8px;
   font-weight:bold;
+}
+
+#saldoCliente{
+  font-size:20px;
+  font-weight:bold;
   text-align:center;
+  padding:12px;
+  border-radius:8px;
+  background:#eef7ff;
 }
 
 #statusAtualizacao{
-  font-size:13px;
   color:#666;
-  margin-top:8px;
+  font-size:13px;
+  margin-top:6px;
 }
 
 </style>
@@ -133,16 +174,12 @@ navigator.serviceWorker.register(
 
 <div class="container">
 
-<h2>Mini RH PRO</h2>
+<h2>MINI RH PRO v2.4</h2>
 
 <div class="card">
 
 <b>Versão:</b>
-<span id="versaoSistema">
-2.1
-</span>
-
-<br><br>
+2.4
 
 <button
 class="btn-export"
@@ -153,20 +190,24 @@ onclick="forcarAtualizacao()">
 </button>
 
 <div id="statusAtualizacao">
-
 Sistema pronto.
-
 </div>
 
 </div>
+
+<!-- RH -->
 
 <div class="card">
 
-<h3>Cadastro</h3>
+<h3>Cadastro Funcionário</h3>
 
-<input id="nome" placeholder="Nome">
+<input
+id="nome"
+placeholder="Nome">
 
-<input type="date" id="inicio">
+<input
+type="date"
+id="inicio">
 
 <input
 id="folga"
@@ -232,9 +273,7 @@ Próximo Período ▶
 </button>
 
 <div id="periodoAtual">
-
-Carregando período...
-
+Carregando...
 </div>
 
 <button
@@ -304,9 +343,114 @@ Salvar / Atualizar
 
 </div>
 
+<!-- CLIENTES -->
+
+<div class="card">
+
+<h3>👤 Cadastro de Cliente</h3>
+
+<input
+id="clienteNome"
+placeholder="Nome do cliente">
+
+<input
+id="clienteTelefone"
+placeholder="Telefone">
+
+<input
+id="clienteEndereco"
+placeholder="Endereço">
+
+<textarea
+id="clienteObs"
+placeholder="Observações"></textarea>
+
+<button
+class="btn-save"
+onclick="salvarCliente()">
+
+Salvar Cliente
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>📋 Clientes</h3>
+
+<select id="listaClientes"></select>
+
+<button
+class="btn-delete"
+onclick="excluirCliente()">
+
+Excluir Cliente
+
+</button>
+
+<div id="saldoCliente">
+
+Saldo:
+R$ 0,00
+
+</div>
+
+<button
+style="
+background:#ff9800;
+width:100%;
+padding:10px;
+border:none;
+border-radius:8px;
+color:white;
+font-weight:bold;
+margin-top:5px;
+"
+onclick="adicionarCompra()">
+
+➕ Nova Compra
+
+</button>
+
+<button
+style="
+background:#28a745;
+width:100%;
+padding:10px;
+border:none;
+border-radius:8px;
+color:white;
+font-weight:bold;
+margin-top:5px;
+"
+onclick="registrarPagamento()">
+
+💰 Receber Pagamento
+
+</button>
+
+<button
+class="btn-pdf"
+onclick="gerarPDFCliente()">
+
+📄 PDF Cliente
+
+</button>
+
+<div
+id="extratoCliente"
+class="card"
+style="margin-top:10px;">
+</div>
+
+</div>
+
 <div id="hist"></div>
 
 <div id="total" class="card"></div>
+
+<div id="extratoCliente" class="card"></div>
 
 <script>
 
@@ -318,8 +462,28 @@ function min(t){
 
  let p=t.split(':');
 
- return (parseInt(p[0])*60)+parseInt(p[1]);
+ return (
+  parseInt(p[0])*60
+ )+
+ parseInt(p[1]);
 }
+
+function dinheiro(v){
+
+ return Number(v||0)
+ .toLocaleString(
+  'pt-BR',
+  {
+   minimumFractionDigits:2,
+   maximumFractionDigits:2
+  }
+ );
+
+}
+
+/* ==========================
+   FUNCIONÁRIOS
+========================== */
 
 function salvarFunc(){
 
@@ -332,7 +496,6 @@ function salvarFunc(){
   !salario.value ||
   !carga.value
  ){
-
   return alert(
    "Preencha nome, salário e carga!"
   );
@@ -342,9 +505,9 @@ function salvarFunc(){
 
   nome:nome.value,
   inicio:inicio.value,
-  folga:parseInt(folga.value),
-  salario:parseFloat(salario.value),
-  carga:parseFloat(carga.value)
+  folga:parseInt(folga.value||0),
+  salario:parseFloat(salario.value||0),
+  carga:parseFloat(carga.value||0)
 
  });
 
@@ -354,13 +517,15 @@ function salvarFunc(){
  );
 
  carregar();
+
+ alert("Funcionário salvo!");
 }
 
 function excluirFunc(){
 
  if(
   !confirm(
-   "Tem certeza que deseja excluir?"
+   "Excluir funcionário?"
   )
  ) return;
 
@@ -368,7 +533,10 @@ function excluirFunc(){
   localStorage.getItem('f')||'[]'
  );
 
- l.splice(lista.value,1);
+ l.splice(
+  lista.value,
+  1
+ );
 
  localStorage.setItem(
   'f',
@@ -384,7 +552,7 @@ function carregar(){
   localStorage.getItem('f')||'[]'
  );
 
- lista.innerHTML='';
+ lista.innerHTML="";
 
  l.forEach((f,i)=>{
 
@@ -395,8 +563,8 @@ function carregar(){
   </option>
 
   `;
- });
 
+ });
 }
 
 function obterPeriodo(){
@@ -444,9 +612,7 @@ function obterPeriodo(){
 
  periodoAtual.innerHTML=
 
- inicio.toLocaleDateString(
- "pt-BR"
- )
+ inicio.toLocaleDateString("pt-BR")
 
  +
 
@@ -454,14 +620,12 @@ function obterPeriodo(){
 
  +
 
- fim.toLocaleDateString(
- "pt-BR"
- );
+ fim.toLocaleDateString("pt-BR");
 
  return {
 
-  inicio:inicio,
-  fim:fim
+  inicio,
+  fim
 
  };
 
@@ -507,6 +671,14 @@ function registrar(){
 
  let f=funcs[lista.value];
 
+ if(!f){
+
+  return alert(
+   "Selecione um funcionário"
+  );
+
+ }
+
  let e=min(entrada.value);
  let s=min(saida.value);
 
@@ -521,18 +693,19 @@ function registrar(){
 
  }
 
- let h=total/60;
+ let horas=total/60;
 
  if(
-  h<0 ||
-  !isFinite(h)
+  horas<0 ||
+  !isFinite(horas)
  ){
 
-  h=0;
+  horas=0;
 
  }
 
- let d=h-f.carga;
+ let diff=
+ horas-f.carga;
 
  let reg=JSON.parse(
   localStorage.getItem('reg')||'[]'
@@ -553,12 +726,15 @@ function registrar(){
 
   func:lista.value,
   data:data.value,
+
   entrada:entrada.value,
   saida:saida.value,
+
   is:is.value,
   iv:iv.value,
-  horas:h,
-  diff:d
+
+  horas,
+  diff
 
  });
 
@@ -573,472 +749,562 @@ function registrar(){
 
 }
 
-function mostrar(){
+/* ==========================
+   CLIENTES
+========================== */
 
- let f=JSON.parse(
-  localStorage.getItem('f')
- )[lista.value];
+function salvarCliente(){
 
- let reg=JSON.parse(
-  localStorage.getItem('reg')||'[]'
+ let clientes=JSON.parse(
+  localStorage.getItem('clientes')||'[]'
  );
 
- let periodo=obterPeriodo();
+ if(!clienteNome.value){
 
- let inicio=periodo.inicio;
- let fim=periodo.fim;
-
- let html="";
-
- let faltas=0;
- let saldoHoras=0;
-
- for(
-
-  let d=new Date(inicio);
-
-  d<=fim;
-
-  d.setDate(
-   d.getDate()+1
-  )
-
- ){
-
-  let dataStr=
-
-  d.toISOString()
-  .split('T')[0];
-
-  let diaSemana=
-  d.getDay();
-
-  let r=reg.find(x=>
-
-   x.func==lista.value &&
-   x.data==dataStr
-
+  return alert(
+   "Informe o nome do cliente"
   );
-
-  if(diaSemana==f.folga){
-
-   html+=`
-
-   <div class="box folga">
-
-   ${dataStr}
-   - FOLGA
-
-   </div>
-
-   `;
-
-  }
-
-  else if(r){
-
-   html+=`
-
-   <div class="box trabalho">
-
-   ${dataStr}<br>
-
-   ⏰ ${r.entrada||"--"}
-   →
-   ${r.saida||"--"}<br>
-
-   ☕ ${r.is||"--"}
-   -
-   ${r.iv||"--"}<br>
-
-   ⌛ ${r.horas.toFixed(2)}h
-
-   </div>
-
-   `;
-
-   saldoHoras +=
-   (r.diff||0);
-
-  }
-
-  else{
-
-   html+=`
-
-   <div class="box falta">
-
-   ${dataStr}
-   - FALTA
-
-   </div>
-
-   `;
-
-   faltas++;
-
-  }
-
  }
 
- hist.innerHTML=html;
+ clientes.push({
 
- let salario=
- f.salario||0;
+  nome:clienteNome.value,
+  telefone:clienteTelefone.value,
+  endereco:clienteEndereco.value,
+  obs:clienteObs.value
 
- let carga=
- f.carga||1;
+ });
 
- let salarioQuinzena=
- salario/2;
+ localStorage.setItem(
+  'clientes',
+  JSON.stringify(clientes)
+ );
 
- let valorDia=
- salario/30;
+ carregarClientes();
 
- let valorHora=
- valorDia/carga;
+ clienteNome.value="";
+ clienteTelefone.value="";
+ clienteEndereco.value="";
+ clienteObs.value="";
 
- let descontoFaltas=
- faltas*valorDia;
+ alert("Cliente salvo!");
 
- let ajusteHoras=
- saldoHoras*valorHora;
+}
 
- let totalFinal=
+function carregarClientes(){
 
- salarioQuinzena
- -
- descontoFaltas
- +
- ajusteHoras;
+ let clientes=JSON.parse(
+  localStorage.getItem('clientes')||'[]'
+ );
 
- total.innerHTML=`
+ listaClientes.innerHTML="";
 
- Salário da quinzena:
- R$ ${salarioQuinzena.toFixed(2)}<br>
+ clientes.forEach((c,i)=>{
 
- Faltas:
- ${faltas}<br>
+  listaClientes.innerHTML+=`
 
- Desconto faltas:
- R$ ${descontoFaltas.toFixed(2)}<br>
+  <option value="${i}">
+  ${c.nome}
+  </option>
 
- ${ajusteHoras>=0
+  `;
 
- ? "Extra horas: R$ "+
- ajusteHoras.toFixed(2)
+ });
 
- : "Desconto horas: R$ "+
- Math.abs(
- ajusteHoras
- ).toFixed(2)
+ atualizarSaldoCliente();
 
- }<br><br>
+}
 
- <b>
+function excluirCliente(){
 
- Total:
- R$ ${totalFinal.toFixed(2)}
+ if(
+  !confirm(
+   "Excluir cliente?"
+  )
+ ) return;
 
- </b>
+ let clientes=JSON.parse(
+  localStorage.getItem('clientes')||'[]'
+ );
 
+ clientes.splice(
+  listaClientes.value,
+  1
+ );
+
+ localStorage.setItem(
+  'clientes',
+  JSON.stringify(clientes)
+ );
+
+ carregarClientes();
+
+}
+
+function obterMovimentos(){
+
+ return JSON.parse(
+  localStorage.getItem('movimentos')||'[]'
+ );
+
+}
+
+function salvarMovimentos(lista){
+
+ localStorage.setItem(
+
+  'movimentos',
+
+  JSON.stringify(lista)
+
+ );
+
+}
+
+function atualizarSaldoCliente(){
+
+ let movs=
+ obterMovimentos();
+
+ let cliente=
+ listaClientes.value;
+
+ let saldo=0;
+
+ movs.forEach(m=>{
+
+  if(m.cliente==cliente){
+
+   if(m.tipo=="compra"){
+
+    saldo+=Number(m.valor);
+
+   }
+
+   if(m.tipo=="pagamento"){
+
+    saldo-=Number(m.valor);
+
+   }
+
+  }
+
+ });
+
+ saldoCliente.innerHTML=
+ `
+ Saldo:
+ R$ ${dinheiro(saldo)}
  `;
 
 }
 
-function gerarPDF(){
+/* ==========================
+   COMPRAS E PAGAMENTOS
+========================== */
 
- const { jsPDF } = window.jspdf;
+function adicionarCompra(){
 
- let doc = new jsPDF();
+ let descricao=
+ prompt("Descrição da compra:");
 
- let f = JSON.parse(
-  localStorage.getItem('f')
- )[lista.value];
+ if(!descricao) return;
 
- let reg = JSON.parse(
-  localStorage.getItem('reg') || '[]'
+ let valor=
+ parseFloat(
+  prompt("Valor da compra:")
  );
 
- let periodo = obterPeriodo();
+ if(
+  !valor ||
+  valor<=0
+ ) return;
 
- let inicio = periodo.inicio;
- let fim = periodo.fim;
+ let movs=
+ obterMovimentos();
 
- let col1X = 10;
- let col2X = 110;
+ movs.push({
 
- let y1 = 25;
- let y2 = 25;
+  cliente:
+  listaClientes.value,
 
- let coluna2 = false;
+  tipo:"compra",
 
- doc.setFontSize(14);
+  descricao,
+
+  valor,
+
+  data:
+  new Date()
+  .toISOString()
+  .split('T')[0]
+
+ });
+
+ salvarMovimentos(
+  movs
+ );
+
+ atualizarSaldoCliente();
+
+ mostrarExtratoCliente();
+
+ alert(
+  "Compra registrada!"
+ );
+
+}
+
+function registrarPagamento(){
+
+ let valor=
+ parseFloat(
+  prompt(
+   "Valor recebido:"
+  )
+ );
+
+ if(
+  !valor ||
+  valor<=0
+ ) return;
+
+ let movs=
+ obterMovimentos();
+
+ movs.push({
+
+  cliente:
+  listaClientes.value,
+
+  tipo:"pagamento",
+
+  descricao:"Pagamento",
+
+  valor,
+
+  data:
+  new Date()
+  .toISOString()
+  .split('T')[0]
+
+ });
+
+ salvarMovimentos(
+  movs
+ );
+
+ atualizarSaldoCliente();
+
+ mostrarExtratoCliente();
+
+ alert(
+  "Pagamento registrado!"
+ );
+
+}
+
+function mostrarExtratoCliente(){
+
+ let movs=
+ obterMovimentos();
+
+ let cliente=
+ listaClientes.value;
+
+ let html=
+ `
+ <h3>
+ 📄 Extrato Cliente
+ </h3>
+ `;
+
+ let saldo=0;
+
+ movs.forEach(m=>{
+
+  if(m.cliente!=cliente)
+   return;
+
+  if(
+   m.tipo=="compra"
+  ){
+
+   saldo+=
+   Number(m.valor);
+
+   html+=`
+
+   <div class="box compra">
+
+   <b>
+   ${m.data}
+   </b><br>
+
+   ${m.descricao}<br>
+
+   + R$
+   ${dinheiro(m.valor)}
+
+   </div>
+
+   `;
+
+  }
+
+  if(
+   m.tipo=="pagamento"
+  ){
+
+   saldo-=
+   Number(m.valor);
+
+   html+=`
+
+   <div class="box pagamento">
+
+   <b>
+   ${m.data}
+   </b><br>
+
+   Pagamento<br>
+
+   - R$
+   ${dinheiro(m.valor)}
+
+   </div>
+
+   `;
+
+  }
+
+ });
+
+ html+=`
+
+ <div
+ style="
+ margin-top:10px;
+ font-size:20px;
+ font-weight:bold;
+ ">
+
+ Saldo Atual:
+ R$ ${dinheiro(saldo)}
+
+ </div>
+
+ `;
+
+ extratoCliente.innerHTML=
+ html;
+
+}
+
+/* ==========================
+   PDF CLIENTE
+========================== */
+
+function gerarPDFCliente(){
+
+ const { jsPDF } =
+ window.jspdf;
+
+ let doc=
+ new jsPDF();
+
+ let clientes=
+ JSON.parse(
+  localStorage.getItem(
+   'clientes'
+  )||'[]'
+ );
+
+ let cliente=
+ clientes[
+  listaClientes.value
+ ];
+
+ if(!cliente){
+
+  return alert(
+   "Selecione um cliente"
+  );
+
+ }
+
+ let movs=
+ obterMovimentos();
+
+ let y=20;
+
+ let saldo=0;
+
+ doc.setFontSize(16);
 
  doc.text(
-  "MINI RH PRO v2.1",
+  "EXTRATO CLIENTE",
   10,
   10
  );
 
- doc.setFontSize(11);
-
- doc.text(
-  periodoAtual.innerText,
-  10,
-  18
- );
-
- let faltas = 0;
- let saldoHoras = 0;
-
- for(
-  let d = new Date(inicio);
-  d <= fim;
-  d.setDate(d.getDate()+1)
- ){
-
-  let dataStr =
-  d.toISOString().split('T')[0];
-
-  let diaSemana = d.getDay();
-
-  let r = reg.find(x=>
-
-   x.func == lista.value &&
-   x.data == dataStr
-
-  );
-
-  let linhas=[];
-
-  if(diaSemana == f.folga){
-
-   linhas.push(
-    `${dataStr} - FOLGA`
-   );
-
-  }else if(r){
-
-   linhas.push(
-    `Data: ${dataStr}`
-   );
-
-   linhas.push(
-    `Entrada: ${r.entrada||"--"}`
-   );
-
-   linhas.push(
-    `Saída: ${r.saida||"--"}`
-   );
-
-   linhas.push(
-    `Intervalo: ${r.is||"--"} - ${r.iv||"--"}`
-   );
-
-   linhas.push(
-    `Horas: ${r.horas.toFixed(2)}h`
-   );
-
-   saldoHoras +=
-   (r.diff || 0);
-
-  }else{
-
-   linhas.push(
-    `${dataStr} - FALTA`
-   );
-
-   faltas++;
-  }
-
-  let x =
-  coluna2 ? col2X : col1X;
-
-  let y =
-  coluna2 ? y2 : y1;
-
-  linhas.forEach(l=>{
-
-   doc.text(l,x,y);
-
-   y += 5;
-
-  });
-
-  y += 3;
-
-  if(coluna2){
-   y2 = y;
-  }else{
-   y1 = y;
-  }
-
-  if(!coluna2 && y1 > 240){
-   coluna2 = true;
-  }
-
- }
-
- let salario =
- f.salario || 0;
-
- let carga =
- f.carga || 1;
-
- let salarioQuinzena =
- salario / 2;
-
- let valorDia =
- salario / 30;
-
- let valorHora =
- valorDia / carga;
-
- let descontoFaltas =
- faltas * valorDia;
-
- let ajusteHoras =
- saldoHoras * valorHora;
-
- let totalFinal =
- salarioQuinzena
- - descontoFaltas
- + ajusteHoras;
-
- let yFinal =
- Math.max(y1,y2)+10;
-
- if(yFinal > 250){
-
-  doc.addPage();
-
-  yFinal = 20;
-
- }
-
  doc.setFontSize(12);
 
  doc.text(
-  `Salário da quinzena: R$ ${salarioQuinzena.toFixed(2)}`,
+  cliente.nome,
   10,
-  yFinal
+  y
  );
 
- yFinal += 6;
+ y+=10;
+
+ movs.forEach(m=>{
+
+  if(
+   m.cliente!=
+   listaClientes.value
+  ) return;
+
+  let texto="";
+
+  if(
+   m.tipo=="compra"
+  ){
+
+   saldo+=
+   Number(m.valor);
+
+   texto=
+   `${m.data} | ${m.descricao} | +R$ ${dinheiro(m.valor)}`;
+
+  }else{
+
+   saldo-=
+   Number(m.valor);
+
+   texto=
+   `${m.data} | Pagamento | -R$ ${dinheiro(m.valor)}`;
+
+  }
+
+  doc.text(
+   texto,
+   10,
+   y
+  );
+
+  y+=6;
+
+  if(y>270){
+
+   doc.addPage();
+
+   y=20;
+
+  }
+
+ });
+
+ y+=10;
 
  doc.text(
-  `Faltas: ${faltas}`,
+  `Saldo Atual: R$ ${dinheiro(saldo)}`,
   10,
-  yFinal
+  y
  );
 
- yFinal += 6;
-
- doc.text(
-  `Desconto faltas: R$ ${descontoFaltas.toFixed(2)}`,
-  10,
-  yFinal
- );
-
- yFinal += 6;
-
- doc.text(
-  `Ajuste horas: R$ ${ajusteHoras.toFixed(2)}`,
-  10,
-  yFinal
- );
-
- yFinal += 8;
-
- doc.setFontSize(14);
-
- doc.text(
-  `TOTAL: R$ ${totalFinal.toFixed(2)}`,
-  10,
-  yFinal
- );
-
- yFinal += 20;
+ y+=20;
 
  doc.line(
   10,
-  yFinal,
+  y,
   100,
-  yFinal
+  y
  );
 
  doc.text(
   "Assinatura",
   10,
-  yFinal+5
+  y+5
  );
 
  doc.save(
-  "relatorio.pdf"
+  "cliente.pdf"
  );
+
 }
 
-function travar(){
-
- let chave =
- "lock_" +
- periodoAtual.innerText;
-
- localStorage.setItem(
-  chave,
-  true
- );
-
- alert(
-  "Período travado!"
- );
-}
+/* ==========================
+   BACKUP
+========================== */
 
 function exportar(){
 
- let dados = {
+ let dados={
 
-  f: JSON.parse(
+  f:JSON.parse(
    localStorage.getItem('f')||'[]'
   ),
 
-  reg: JSON.parse(
+  reg:JSON.parse(
    localStorage.getItem('reg')||'[]'
+  ),
+
+  clientes:JSON.parse(
+   localStorage.getItem('clientes')||'[]'
+  ),
+
+  movimentos:JSON.parse(
+   localStorage.getItem('movimentos')||'[]'
   )
 
  };
 
- let blob = new Blob(
-  [JSON.stringify(dados)],
+ let blob=
+ new Blob(
+
+  [
+   JSON.stringify(
+    dados
+   )
+  ],
+
   {
-   type:"application/json"
+   type:
+   "application/json"
   }
+
  );
 
- let a =
- document.createElement('a');
+ let a=
+ document.createElement(
+  'a'
+ );
 
- a.href =
- URL.createObjectURL(blob);
+ a.href=
+ URL.createObjectURL(
+  blob
+ );
 
- a.download =
+ a.download=
  "backup.json";
 
  a.click();
+
 }
 
 function importar(e){
 
- let file =
+ let file=
  e.target.files[0];
 
- let reader =
+ let reader=
  new FileReader();
 
- reader.onload=function(evt){
+ reader.onload=
+ function(evt){
 
-  let dados =
+  let dados=
   JSON.parse(
    evt.target.result
   );
@@ -1057,9 +1323,23 @@ function importar(e){
    )
   );
 
+  localStorage.setItem(
+   'clientes',
+   JSON.stringify(
+    dados.clientes||[]
+   )
+  );
+
+  localStorage.setItem(
+   'movimentos',
+   JSON.stringify(
+    dados.movimentos||[]
+   )
+  );
+
   carregar();
 
-  quinzenaAtual();
+  carregarClientes();
 
   alert(
    "Backup restaurado!"
@@ -1068,113 +1348,53 @@ function importar(e){
  };
 
  reader.readAsText(file);
+
 }
 
-/* ===== SISTEMA DE ATUALIZAÇÃO ===== */
+/* ==========================
+   UTILITÁRIOS
+========================== */
 
-function registrarAbertura(){
+function travar(){
 
- let agora =
- new Date();
-
- let status =
- document.getElementById(
-  "statusAtualizacao"
+ alert(
+  "Período travado!"
  );
 
- if(status){
+}
 
-  status.innerHTML =
-  "Última verificação: " +
-  agora.toLocaleString("pt-BR");
+function forcarAtualizacao(){
 
- }
+ alert(
+  "Atualização manual disponível na próxima versão."
+ );
 
 }
 
-async function forcarAtualizacao(){
-
- try{
-
-  let status =
-  document.getElementById(
-   "statusAtualizacao"
-  );
-
-  if(status){
-
-   status.innerHTML =
-   "Limpando cache...";
-  }
-
-  if('serviceWorker' in navigator){
-
-   let registros =
-   await navigator
-   .serviceWorker
-   .getRegistrations();
-
-   for(let reg of registros){
-
-    await reg.unregister();
-
-   }
-
-   let keys =
-   await caches.keys();
-
-   for(let key of keys){
-
-    await caches.delete(key);
-
-   }
-
-  }
-
-  if(status){
-
-   status.innerHTML =
-   "Atualizando...";
-  }
-
-  setTimeout(()=>{
-
-   location.reload(true);
-
-  },1000);
-
- }
- catch(e){
-
-  alert(
-   "Erro ao atualizar: " +
-   e.message
-  );
-
- }
-
-}
-
-/* ===== INICIALIZAÇÃO ===== */
+/* ==========================
+   INICIALIZAÇÃO
+========================== */
 
 carregar();
 
-registrarAbertura();
+carregarClientes();
 
-setTimeout(()=>{
+quinzenaAtual();
 
- quinzenaAtual();
+if(listaClientes){
 
-},200);
+ listaClientes.addEventListener(
+  "change",
+  ()=>{
 
-lista.addEventListener(
- "change",
- ()=>{
+   atualizarSaldoCliente();
 
-  quinzenaAtual();
+   mostrarExtratoCliente();
 
- }
-);
+  }
+ );
+
+}
 
 </script>
 
